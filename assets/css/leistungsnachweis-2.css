@@ -1,0 +1,11 @@
+.ve-signatures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:30px;break-inside:avoid}
+.ve-signature-box{width:100%;min-width:0;text-align:left;break-inside:avoid}
+.ve-signature-label{display:block;margin:0 0 8px;font-size:14px;color:#18395b}
+.ve-signature-pad{display:block;width:100%;height:180px;border:1px solid #aaa;border-radius:7px;background:#fff;touch-action:none;cursor:crosshair}
+.ve-signature-tools{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.ve-signature-tools>span{font-size:11px;color:#727785}
+.ve-signature-tools>.nav-btn{padding:8px 10px;min-height:36px;font-size:12px}
+.ve-signature-status{min-height:18px;margin:5px 0;font-size:11px;color:#727785}
+.ve-signature-caption{margin-top:8px;padding-top:7px;border-top:1px solid #233247;text-align:center;font-size:12px}
+@media screen and (max-width:700px){.ve-signatures{grid-template-columns:1fr}}
+@media print{.ve-signatures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;break-inside:avoid}.ve-signature-tools,.ve-signature-status{display:none!important}.ve-signature-pad{height:180px;border:0;border-radius:0}.ve-signature-label{font-size:12px}}

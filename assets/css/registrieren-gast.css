@@ -1,0 +1,116 @@
+:root {
+    --rot: #922f2b;
+    --blau: #1d3557;
+    --rand: #d9dee5;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+    color: #263238;
+    font-family: Arial, sans-serif;
+}
+
+.card {
+    width: 100%;
+    max-width: 440px;
+    padding: 32px;
+    border: 1px solid #e8e8e8;
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 12px 40px rgba(29,53,87,.09);
+}
+
+.logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.logo img {
+    width: 180px;
+    max-width: 100%;
+    height: auto;
+}
+
+h1 {
+    margin: 0 0 10px;
+    color: var(--blau);
+    font-size: 26px;
+}
+
+p {
+    color: #667085;
+    font-size: 14px;
+    line-height: 1.55;
+}
+
+label {
+    display: block;
+    margin: 17px 0 7px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+input {
+    width: 100%;
+    min-height: 46px;
+    padding: 12px;
+    border: 1px solid var(--rand);
+    border-radius: 9px;
+    font: inherit;
+}
+
+input:focus {
+    outline: 3px solid rgba(29,53,87,.13);
+    border-color: var(--blau);
+}
+
+button, .back {
+    display: flex;
+    width: 100%;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border-radius: 9px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+button {
+    margin-top: 23px;
+    border: 0;
+    background: var(--rot);
+    color: white;
+}
+
+button:hover { background: #762522; }
+button:disabled { opacity: .6; cursor: not-allowed; }
+
+.back {
+    margin-top: 10px;
+    border: 1px solid var(--rand);
+    color: var(--blau);
+    background: white;
+}
+
+.status {
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+}
+
+@media (max-width: 420px) {
+    .card { padding: 24px 20px; }
+}

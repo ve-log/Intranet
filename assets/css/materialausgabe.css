@@ -1,0 +1,1187 @@
+/* =========================================================
+   GRUNDLAYOUT
+========================================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    width:100%;
+    overflow-x:hidden;
+}
+
+body{
+
+    font-family:Arial, Helvetica, sans-serif;
+
+    background:#f4f4f4;
+
+    color:#222;
+
+    overflow-x:hidden;
+}
+
+
+/* =========================================================
+   HAUPT-FORMULAR
+========================================================= */
+
+.formular{
+
+    width:calc(100% - 30px);
+
+    max-width:1000px;
+
+    margin:15px auto;
+
+    background:#ffffff;
+
+    border-radius:15px;
+
+    padding:28px;
+
+    box-shadow:
+        0 2px 12px rgba(0,0,0,0.12);
+
+}
+
+
+/* =========================================================
+   TOP BUTTONS
+========================================================= */
+
+.top-buttons{
+
+    display:flex;
+
+    gap:10px;
+
+    margin-bottom:18px;
+
+}
+
+.top-button{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    text-decoration:none;
+
+    background:#8e2f2b;
+
+    color:#ffffff;
+
+    border:none;
+
+    border-radius:6px;
+
+    padding:10px 18px;
+
+    min-height:42px;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+.top-button:hover{
+
+    background:#742522;
+
+}
+
+
+/* =========================================================
+   KOPF
+========================================================= */
+
+.kopf{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    gap:30px;
+
+}
+
+.titel{
+
+    color:#18395b;
+
+    font-size:22px;
+
+    font-weight:bold;
+
+    margin-bottom:18px;
+
+}
+
+.lieferschein{
+
+    color:#18395b;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+}
+
+.lieferschein span{
+
+    color:#8e2f2b;
+
+    font-size:24px;
+
+    margin-left:5px;
+
+}
+
+
+/* =========================================================
+   LOGO
+========================================================= */
+
+.logo{
+
+    text-align:right;
+
+    flex-shrink:0;
+
+}
+
+.logo-img{
+
+    width:250px;
+
+    max-width:100%;
+
+    height:auto;
+
+    display:block;
+
+}
+
+.logo p{
+
+    margin-top:8px;
+
+    font-size:12px;
+
+    line-height:1.45;
+
+    color:#444;
+
+}
+
+
+/* =========================================================
+   TRENNLINIE
+========================================================= */
+
+.linie{
+
+    border-top:1px solid #aaa;
+
+    margin:22px 0 25px 0;
+
+}
+
+
+/* =========================================================
+   FELDER
+========================================================= */
+
+.grid{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    column-gap:25px;
+
+    row-gap:18px;
+
+}
+
+.feld{
+
+    width:100%;
+
+}
+
+.feld label{
+
+    display:block;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    margin-bottom:5px;
+
+}
+
+.feld input{
+
+    width:100%;
+
+    height:38px;
+
+    padding:5px 8px;
+
+    font-size:15px;
+
+    background:transparent;
+
+    border:none;
+
+    border-bottom:1px solid #999;
+
+    outline:none;
+
+}
+
+.feld input:focus{
+
+    border-bottom:2px solid #8e2f2b;
+
+}
+
+.voll{
+
+    grid-column:1/-1;
+
+}
+
+
+/* =========================================================
+   MATERIAL KASTEN
+========================================================= */
+
+.materialbox{
+
+    width:100%;
+
+    margin-top:28px;
+
+    padding:14px 12px 12px 12px;
+
+    border:1px solid #777;
+
+    border-radius:5px;
+
+    background:#fff;
+
+}
+
+.materialbox h3{
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    padding-bottom:6px;
+
+    margin-bottom:0;
+
+    border-bottom:1px solid #777;
+
+    text-transform:uppercase;
+
+}
+
+.material-grid{
+
+    display:grid;
+
+    grid-template-columns:3fr 1fr;
+
+    gap:14px;
+
+    padding-top:7px;
+
+    padding-bottom:10px;
+
+    border-bottom:1px solid #777;
+
+}
+
+.material-grid label{
+
+    display:block;
+
+    font-size:12px;
+
+    font-weight:bold;
+
+    margin-bottom:3px;
+
+}
+
+.material-grid input{
+
+    width:100%;
+
+    height:31px;
+
+    border:none;
+
+    border-bottom:1px solid #999;
+
+    padding:3px 5px;
+
+    font-size:14px;
+
+    outline:none;
+
+    background:transparent;
+
+}
+
+.material-grid input:focus{
+
+    border-bottom:2px solid #8e2f2b;
+
+}
+
+
+/* =========================================================
+   CHECKBOXEN
+========================================================= */
+
+.checkboxen{
+
+    display:grid;
+
+    grid-template-columns:repeat(3,1fr);
+
+    column-gap:25px;
+
+    row-gap:8px;
+
+    padding-top:8px;
+
+}
+
+.checkboxen label{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:6px;
+
+    font-size:12px;
+
+    min-height:20px;
+
+    cursor:pointer;
+
+}
+
+.checkboxen input{
+
+    width:15px;
+
+    height:15px;
+
+    margin:0;
+
+    accent-color:#8e2f2b;
+
+}
+
+
+/* =========================================================
+   BEMERKUNGEN
+========================================================= */
+
+.bemerkungen{
+
+    margin-top:22px;
+
+}
+
+.bemerkungen label{
+
+    display:block;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    margin-bottom:6px;
+
+}
+
+.bemerkungen textarea{
+
+    width:100%;
+
+    min-height:90px;
+
+    resize:vertical;
+
+    border:none;
+
+    border-bottom:1px solid #999;
+
+    padding:8px 5px;
+
+    font-family:Arial,sans-serif;
+
+    font-size:14px;
+
+    outline:none;
+
+}
+
+.bemerkungen textarea:focus{
+
+    border-bottom:2px solid #8e2f2b;
+
+}
+
+
+/* =========================================================
+   SIGNATUREN
+========================================================= */
+
+.signaturen{
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:25px;
+
+    margin-top:30px;
+
+}
+
+.signature-box{
+
+    width:100%;
+
+}
+
+.signature-title{
+
+    color:#18395b;
+
+    font-size:13px;
+
+    font-weight:bold;
+
+    margin-bottom:7px;
+
+}
+
+.signature-pad{
+
+    width:100%;
+
+    height:150px;
+
+    display:block;
+
+    background:#fff;
+
+    border:1px solid #ccc;
+
+    border-radius:6px;
+
+    touch-action:none;
+
+    cursor:crosshair;
+
+}
+
+.sign-text{
+
+    margin-top:7px;
+
+    padding-top:6px;
+
+    border-top:1px solid #999;
+
+    font-size:11px;
+
+    font-weight:bold;
+
+    color:#444;
+
+}
+
+.signature-buttons{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:6px;
+
+    margin-top:7px;
+
+}
+
+.signature-button{
+
+    border:none;
+
+    border-radius:5px;
+
+    padding:7px 10px;
+
+    min-height:34px;
+
+    color:#fff;
+
+    font-size:11px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+.signature-delete{
+
+    background:#777;
+
+}
+
+.signature-upload{
+
+    background:#444;
+
+}
+
+.signature-png{
+
+    background:#1f4e79;
+
+}
+
+.signature-button:hover{
+
+    opacity:.9;
+
+}
+
+.file-input{
+
+    display:none;
+
+}
+
+
+/* =========================================================
+   HAUPT BUTTONS
+========================================================= */
+
+.buttons{
+
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:10px;
+
+    margin-top:28px;
+
+    padding-top:18px;
+
+    border-top:1px solid #ddd;
+
+}
+
+.buttons button{
+
+    border:none;
+
+    border-radius:6px;
+
+    padding:11px 18px;
+
+    min-height:44px;
+
+    color:#fff;
+
+    font-size:14px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+.buttons button:hover{
+
+    opacity:.9;
+
+}
+
+.save{
+
+    background:#8e2f2b;
+
+}
+
+.pdf{
+
+    background:#1f4e79;
+
+}
+
+.print{
+
+    background:#444;
+
+}
+
+.clear{
+
+    background:#777;
+
+}
+
+.list-btn{
+
+    background:#18395b;
+
+}
+
+
+/* =========================================================
+   GESPEICHERTE LIEFERSCHEINE
+========================================================= */
+
+.gespeicherte-box{
+
+    display:none;
+
+    width:calc(100% - 30px);
+
+    max-width:1000px;
+
+    margin:0 auto 20px;
+
+    background:#fff;
+
+    border-radius:15px;
+
+    padding:25px;
+
+    box-shadow:
+        0 2px 12px rgba(0,0,0,0.12);
+
+}
+
+.gespeicherte-box.aktiv{
+
+    display:block;
+
+}
+
+.gespeicherte-box h2{
+
+    color:#18395b;
+
+    font-size:20px;
+
+    margin-bottom:18px;
+
+}
+
+.lieferschein-liste{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+}
+
+.lieferschein-eintrag{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:space-between;
+
+    gap:10px;
+
+    padding:12px;
+
+    border:1px solid #ddd;
+
+    border-radius:7px;
+
+    background:#fafafa;
+
+}
+
+.lieferschein-info{
+
+    flex:1;
+
+}
+
+.lieferschein-info strong{
+
+    color:#8e2f2b;
+
+    font-size:16px;
+
+}
+
+.lieferschein-info span{
+
+    display:block;
+
+    margin-top:3px;
+
+    color:#555;
+
+    font-size:12px;
+
+}
+
+.eintrag-buttons{
+
+    display:flex;
+
+    gap:6px;
+
+}
+
+.eintrag-buttons button{
+
+    border:none;
+
+    border-radius:5px;
+
+    padding:8px 12px;
+
+    color:white;
+
+    font-weight:bold;
+
+    cursor:pointer;
+
+}
+
+.oeffnen-btn{
+
+    background:#1f4e79;
+
+}
+
+.loeschen-btn{
+
+    background:#777;
+
+}
+
+.keine-formulare{
+
+    padding:20px;
+
+    text-align:center;
+
+    color:#777;
+
+    border:1px dashed #bbb;
+
+    border-radius:6px;
+
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media(max-width:900px){
+
+    .formular{
+
+        width:calc(100% - 20px);
+
+        margin:10px auto;
+
+        padding:22px;
+
+    }
+
+    .gespeicherte-box{
+
+        width:calc(100% - 20px);
+
+    }
+
+    .kopf{
+
+        gap:20px;
+
+    }
+
+    .logo-img{
+
+        width:210px;
+
+    }
+
+}
+
+
+/* =========================================================
+   HANDY
+========================================================= */
+
+@media(max-width:650px){
+
+    .formular{
+
+        width:100%;
+
+        margin:0;
+
+        min-height:100vh;
+
+        padding:15px;
+
+        border-radius:0;
+
+        box-shadow:none;
+
+    }
+
+    .gespeicherte-box{
+
+        width:100%;
+
+        margin:0;
+
+        border-radius:0;
+
+        box-shadow:none;
+
+        padding:15px;
+
+    }
+
+    .top-buttons{
+
+        width:100%;
+
+        gap:8px;
+
+    }
+
+    .top-button{
+
+        flex:1;
+
+        padding:10px 7px;
+
+        font-size:13px;
+
+    }
+
+    .kopf{
+
+        flex-direction:column;
+
+        gap:15px;
+
+    }
+
+    .logo{
+
+        order:-1;
+
+        width:100%;
+
+        text-align:center;
+
+    }
+
+    .logo-img{
+
+        width:210px;
+
+        margin:0 auto;
+
+    }
+
+    .logo p{
+
+        text-align:center;
+
+        font-size:11px;
+
+    }
+
+    .titel{
+
+        font-size:20px;
+
+        margin-bottom:12px;
+
+    }
+
+    .lieferschein{
+
+        font-size:14px;
+
+    }
+
+    .lieferschein span{
+
+        font-size:21px;
+
+    }
+
+    .grid{
+
+        grid-template-columns:1fr;
+
+        gap:15px;
+
+    }
+
+    .voll{
+
+        grid-column:auto;
+
+    }
+
+    .feld input{
+
+        height:43px;
+
+        font-size:16px;
+
+    }
+
+    .materialbox{
+
+        margin-top:24px;
+
+        padding:12px 10px 10px;
+
+    }
+
+    .material-grid{
+
+        grid-template-columns:1fr;
+
+        gap:10px;
+
+    }
+
+    .material-grid input{
+
+        height:40px;
+
+        font-size:16px;
+
+    }
+
+    .checkboxen{
+
+        grid-template-columns:1fr 1fr;
+
+        column-gap:12px;
+
+        row-gap:10px;
+
+    }
+
+    .checkboxen label{
+
+        font-size:13px;
+
+    }
+
+    .bemerkungen textarea{
+
+        min-height:110px;
+
+        font-size:16px;
+
+    }
+
+    .signaturen{
+
+        grid-template-columns:1fr;
+
+        gap:25px;
+
+    }
+
+    .signature-pad{
+
+        height:180px;
+
+    }
+
+    .signature-buttons{
+
+        display:grid;
+
+        grid-template-columns:1fr;
+
+    }
+
+    .signature-button{
+
+        width:100%;
+
+        min-height:40px;
+
+        font-size:13px;
+
+    }
+
+    .buttons{
+
+        display:grid;
+
+        grid-template-columns:1fr;
+
+        gap:8px;
+
+    }
+
+    .buttons button{
+
+        width:100%;
+
+        min-height:48px;
+
+        font-size:15px;
+
+    }
+
+    .lieferschein-eintrag{
+
+        flex-direction:column;
+
+        align-items:stretch;
+
+    }
+
+    .eintrag-buttons{
+
+        width:100%;
+
+    }
+
+    .eintrag-buttons button{
+
+        flex:1;
+
+        min-height:40px;
+
+    }
+
+}
+
+
+/* =========================================================
+   SEHR KLEINES HANDY
+========================================================= */
+
+@media(max-width:380px){
+
+    .formular{
+
+        padding:12px;
+
+    }
+
+    .top-button{
+
+        font-size:12px;
+
+        padding:9px 5px;
+
+    }
+
+    .checkboxen{
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+
+
+/* =========================================================
+   DRUCK
+========================================================= */
+
+@media print{
+
+    @page{
+
+        size:A4;
+
+        margin:12mm;
+
+    }
+
+    body{
+
+        background:#fff;
+
+    }
+
+    .formular{
+
+        width:100%;
+
+        max-width:none;
+
+        margin:0;
+
+        padding:0;
+
+        border-radius:0;
+
+        box-shadow:none;
+
+    }
+
+    .gespeicherte-box{
+
+        display:none !important;
+
+    }
+
+    .top-buttons,
+    .buttons,
+    .signature-buttons{
+
+        display:none !important;
+
+    }
+
+}
