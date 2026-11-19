@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+<script src="../../assets/js/firebase-config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <title>Einstellungen · VE-Log Gastportal</title>
+  <link rel="stylesheet" href="../../assets/css/einstellungen-2.css">
+</head>
+<body>
+  <section id="loading" class="gate" aria-live="polite"><h1>Gastportal-Einstellungen</h1><p>Dein Zugang wird überprüft …</p></section>
+  <section id="denied" class="gate" hidden><h1 id="deniedTitle">Anmeldung erforderlich</h1><p id="deniedMessage">Melde dich mit deinem Gastkonto an, um deine Einstellungen aufzurufen.</p><a id="deniedLink" href="../../index.html">Zur Anmeldung</a></section>
+
+  <div id="app" hidden>
+    <aside class="sidebar" aria-label="Hauptnavigation">
+      <a class="brand" href="dashboard.html" aria-label="VE-Log Gastportal">VE-Log<small>GÄSTEPΟRTAL</small></a>
+      <div class="nav-label">MEIN BEREICH</div>
+      <nav class="nav">
+        <a href="dashboard.html">Übersicht</a>
+        <a href="formular.html">Formulare</a>
+        <a class="active" href="einstellungen.html" aria-current="page">Einstellungen</a>
+      </nav>
+      <div class="side-note">Dein Gastkonto und deine persönlichen Angaben.</div>
+    </aside>
+    <div class="shell">
+      <header class="topbar"><div class="breadcrumb"><a href="dashboard.html">Mein Bereich</a> / <strong>Einstellungen</strong></div><a class="back" href="dashboard.html">← Zurück zum Gastportal</a></header>
+      <main>
+        <section class="intro" aria-labelledby="pageTitle">
+          <div><div class="eyebrow">Dein Portal · Deine Einstellungen</div><h1 id="pageTitle">Einstellungen</h1><p class="muted">Öffne dein Gastbenutzerkonto, um Name, Telefonnummer, E-Mail-Adresse oder Passwort zu ändern.</p></div>
+          <div class="identity"><div class="avatar" id="accountAvatar" aria-hidden="true">GA</div><div class="identity-copy"><strong id="accountName">Wird geladen …</strong><span id="accountRole">Rolle wird geprüft</span></div></div>
+        </section>
+
+        <div id="pageStatus" class="status" role="status" aria-live="polite" hidden></div>
+
+        <section id="settingsArea" hidden aria-labelledby="areaTitle">
+          <div class="section-title"><h2 id="areaTitle">Deine Einstellungen</h2><p class="muted">Deine Kontodaten bearbeitest du auf einer separaten Seite.</p></div>
+          <a class="card" href="benutzerkonto.html">
+            <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"></circle><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M21 21v-2a6 6 0 0 0-4-5"></path></svg></span>
+            <span class="card-copy"><h3>Mein Gastbenutzerkonto</h3><p>Vorname, Nachname, Telefonnummer, E-Mail-Adresse und Passwort verwalten.</p></span>
+            <span class="card-action">Konto öffnen →</span>
+          </a>
+        </section>
+
+        <footer class="footer"><span>VE-Log · Gästeportal</span><a href="dashboard.html">← Zurück zum Gastportal</a></footer>
+      </main>
+    </div>
+  </div>
+
+  <noscript><section class="gate"><h1>JavaScript erforderlich</h1><p>Aktiviere JavaScript, damit deine Anmeldung geprüft werden kann.</p></section></noscript>
+
+  <script type="module">
+    import {initializeApp, getApps} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
+    import {getAuth, onAuthStateChanged} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
+    import {getDatabase, ref, get} from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js';
+
+    const firebaseConfig = window.VELOG_FIREBASE_CONFIG;
+    const firebaseApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const auth = getAuth(firebaseApp);
+    const db = getDatabase(firebaseApp);
+    const $ = id => document.getElementById(id);
+    let generation = 0;
+
+    function showDenied(title, message, showLogin = false) {
+      $('loading').hidden = true;
+      $('app').hidden = true;
+      $('deniedTitle').textContent = title;
+      $('deniedMessage').textContent = message;
+      $('deniedLink').href = showLogin ? '../../index.html' : 'dashboard.html';
+      $('deniedLink').textContent = showLogin ? 'Zur Anmeldung' : 'Zurück zum Gastportal';
+      $('denied').hidden = false;
+    }
+
+    function showStatus(message, isError = false) {
+      const element = $('pageStatus');
+      element.textContent = message;
+      element.className = 'status' + (isError ? ' error' : '');
+      element.hidden = !message;
+    }
+
+    onAuthStateChanged(auth, async user => {
+      const session = ++generation;
+      $('app').hidden = true;
+      $('denied').hidden = true;
+      $('loading').hidden = false;
+      $('settingsArea').hidden = true;
+
+      if (!user) {
+        showDenied('Anmeldung erforderlich', 'Melde dich mit deinem Gastkonto an, um deine Einstellungen aufzurufen.', true);
+        return;
+      }
+
+      try {
+        const roleSnapshot = await get(ref(db, `roles/${user.uid}`));
+        if (session !== generation || auth.currentUser?.uid !== user.uid) return;
+        if (roleSnapshot.val() !== 'gast') {
+          showDenied('Kein Gastzugriff', 'Diese Einstellungsseite ist nur für Konten mit der Gastrolle vorgesehen. Dein Konto bleibt angemeldet.');
+          return;
+        }
+
+        const profileSnapshot = await get(ref(db, `users/${user.uid}`));
+        if (session !== generation || auth.currentUser?.uid !== user.uid) return;
+        const profile = profileSnapshot.exists() && profileSnapshot.val() && typeof profileSnapshot.val() === 'object'
+          ? profileSnapshot.val()
+          : {};
+        const name = [profile.vorname, profile.nachname]
+          .filter(value => typeof value === 'string' && value.trim())
+          .map(value => value.trim())
+          .join(' ') || user.email || 'Gast';
+        $('accountName').textContent = name;
+        $('accountName').title = user.email || '';
+        $('accountAvatar').textContent = name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('').toUpperCase() || 'GA';
+        $('accountRole').textContent = 'Gastkonto';
+        $('loading').hidden = true;
+        $('app').hidden = false;
+        $('settingsArea').hidden = false;
+      } catch (error) {
+        console.error('Gastportal-Einstellungen konnten nicht geladen werden:', error);
+        const permissionDenied = String(error?.code || '').toLowerCase().includes('permission');
+        showDenied('Einstellungen nicht verfügbar', permissionDenied
+          ? 'Dein Gastzugriff konnte nicht geprüft werden. Bitte wende dich an die Administration, damit die Firebase-Regeln geprüft werden.'
+          : 'Die Gastportal-Einstellungen konnten nicht geladen werden. Prüfe deine Verbindung und lade die Seite erneut.');
+      }
+    });
+  </script>
+</body>
+</html>

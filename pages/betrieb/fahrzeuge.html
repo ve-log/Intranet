@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+<script src="../../assets/js/firebase-config.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>VE-Log · Fahrzeugübersicht</title>
+<link rel="stylesheet" href="../../assets/css/fahrzeuge.css">
+</head>
+<body>
+<svg class="defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+<symbol id="grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+<symbol id="file" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h6"/></symbol>
+<symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M21 21v-2a6 6 0 0 0-4-5"/></symbol>
+<symbol id="calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18M8 15h2M14 15h2M8 18h2"/></symbol>
+<symbol id="logout" viewBox="0 0 24 24"><path d="M9 4H4v16h5M9 12h12M17 8l4 4-4 4"/></symbol>
+<symbol id="truck" viewBox="0 0 24 24"><path d="M3 5h11v12H3zM14 9h4l3 4v4h-7"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+<symbol id="search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></symbol>
+<symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+</defs></svg>
+<a class="skip" href="#main" style="position:absolute;left:20px;top:-100px;background:white;padding:12px;z-index:10" onfocus="this.style.top='12px'">Zum Inhalt springen</a>
+<aside class="sidebar" aria-label="Hauptnavigation">
+<a class="brand" href="../mitarbeiter/dashboard.html" aria-label="VE-Log Dashboard"><img class="brand-image" id="brandLogo" src="../../assets/img/logo.png" alt="VE-Log"><div><span class="wordmark" id="brandFallback" hidden>VE-Log</span><small>MITARBEITERPORTAL</small></div></a>
+<div class="nav-label">ARBEITSPLATZ</div><nav class="nav">
+<a href="../mitarbeiter/dashboard.html"><svg class="icon" aria-hidden="true"><use href="#grid"/></svg>Dashboard</a>
+<a href="../personal/personalmanagement.html" data-admin-only><svg class="icon" aria-hidden="true"><use href="#users"/></svg>Mitarbeiter</a>
+<a href="../formulare/formular.html"><svg class="icon" aria-hidden="true"><use href="#file"/></svg>Formulare</a>
+<a href="../mitarbeiter/urlaub.html"><svg class="icon" aria-hidden="true"><use href="#calendar"/></svg>Urlaub</a>
+<a class="active" href="fahrzeuge.html" aria-current="page" data-admin-only><svg class="icon" aria-hidden="true"><use href="#truck"/></svg>Fahrzeuge</a>
+<a href="#reportDialog" data-dialog="reportDialog" data-admin-only><svg class="icon" aria-hidden="true"><use href="#grid"/></svg>Berichte</a>
+<a href="../mitarbeiter/kommunikation.html">Kommunikation</a>
+</nav><div class="side-bottom"><div class="side-note">Alles für deinen Arbeitsalltag.<br>Einfach an einem Ort.</div></div></aside>
+<div class="shell"><header class="topbar"><div class="breadcrumb">Arbeitsplatz &nbsp;/&nbsp; <strong>Fahrzeuge</strong></div><div class="account"><div class="avatar" id="avatar" aria-hidden="true">VE</div><div class="account-copy"><strong id="userEmail">Anmeldung wird geprüft …</strong><span id="sessionLabel">Firebase wird geladen</span></div><button class="quiet-button" id="sessionButton" type="button"><svg class="icon" aria-hidden="true"><use href="#logout"/></svg><span id="sessionAction">Anmelden</span></button></div></header>
+<main id="main">
+<section class="intro" aria-labelledby="pageTitle"><div><div class="eyebrow">Verwaltung · Fuhrpark</div><h1 id="pageTitle">Fahrzeugübersicht</h1><p class="muted">Verwalte Fahrzeuge, Fahrerzuordnung, Einsatzstatus und Wartungstermine an einem Ort.</p></div><div class="date muted"><time id="today"></time></div></section>
+<div class="notice" id="profileError" role="status" hidden></div>
+<div class="notice"><strong>Hinweis zur Datenquelle</strong><br><span id="dataNotice">Fahrzeuge werden in diesem Browser gespeichert. Die Seite ist noch nicht mit deiner Firebase-Datenbank verbunden. Die Fahrzeugdaten sind lokal und keine echten Betriebsdaten.</span></div>
+<section class="stats" aria-label="Fuhrpark-Kennzahlen">
+<div class="stat"><div class="stat-top">Fahrzeuge gesamt<span class="icon-box"><svg class="icon"><use href="#truck"/></svg></span></div><div class="stat-value" id="totalCount">0</div><p class="stat-note">Erfasste Fahrzeuge</p></div>
+<div class="stat"><div class="stat-top">Im Einsatz<span class="icon-box blue"><svg class="icon"><use href="#users"/></svg></span></div><div class="stat-value" id="assignedCount">0</div><p class="stat-note">Aktuell zugeordnet</p></div>
+<div class="stat"><div class="stat-top">Verfügbar<span class="icon-box green"><svg class="icon"><use href="#grid"/></svg></span></div><div class="stat-value" id="availableCount">0</div><p class="stat-note">Einsatzbereit und frei</p></div>
+<div class="stat"><div class="stat-top">Wartung fällig<span class="icon-box gold"><svg class="icon"><use href="#calendar"/></svg></span></div><div class="stat-value" id="serviceCount">0</div><p class="stat-note">Termin heute oder überfällig</p></div>
+</section>
+<section class="panel" aria-labelledby="fleetTitle"><div class="panel-head"><div><h2 id="fleetTitle">Fuhrpark</h2><p class="muted" style="font-size:12px;margin-top:4px">Fahrzeugdaten und aktueller Status</p></div><button class="primary" id="addVehicle" type="button"><svg class="icon" style="width:16px;height:16px"><use href="#plus"/></svg>Fahrzeug hinzufügen</button></div>
+<div class="toolbar"><label class="search-wrap"><svg class="icon" style="width:17px;height:17px"><use href="#search"/></svg><input id="searchInput" type="search" placeholder="Kennzeichen, Modell oder Fahrer suchen…" aria-label="Fahrzeuge suchen"></label><select class="field" id="statusFilter" aria-label="Nach Status filtern"><option value="">Alle Status</option><option value="Verfügbar">Verfügbar</option><option value="Im Einsatz">Im Einsatz</option><option value="Wartung">Wartung</option></select></div>
+<div class="table-wrap"><table><thead><tr><th>Fahrzeug</th><th>Kennzeichen</th><th>Fahrer / Zuordnung</th><th>Status</th><th>Nächste Wartung</th><th>Aktionen</th></tr></thead><tbody id="vehicleRows"></tbody></table></div>
+<div class="empty" id="emptyState"><svg class="icon"><use href="#truck"/></svg><strong>Noch keine Fahrzeuge erfasst</strong><p>Füge dein erstes Fahrzeug hinzu, um den Fuhrpark zu verwalten.</p></div>
+<p class="footnote">Tipp: Du kannst Fahrzeuge jederzeit bearbeiten oder entfernen. Für gemeinsame Nutzung auf mehreren Geräten muss die Speicherung an Firebase angebunden werden.</p>
+</section>
+<footer class="bottom"><span>© <span id="year"></span> VE-Log · Mitarbeiterportal</span><span>Fuhrparkverwaltung</span></footer>
+</main></div>
+<dialog class="dialog" id="vehicleDialog" aria-labelledby="vehicleDialogTitle"><form id="vehicleForm"><div class="dialog-head"><h2 id="vehicleDialogTitle">Fahrzeug hinzufügen</h2><button class="dialog-close" type="button" data-close aria-label="Schließen">×</button></div><input type="hidden" id="vehicleId"><div class="form-grid">
+<label class="form-field">Marke / Modell<input id="vehicleModel" required maxlength="100" placeholder="z. B. VW Transporter"></label>
+<label class="form-field">Kennzeichen<input id="vehiclePlate" required maxlength="20" placeholder="z. B. H-VE 1234"></label>
+<label class="form-field">Fahrer / Zuordnung<input id="vehicleDriver" maxlength="100" placeholder="Name des Fahrers"></label>
+<label class="form-field">Status<select id="vehicleStatus"><option>Verfügbar</option><option>Im Einsatz</option><option>Wartung</option></select></label>
+<label class="form-field full">Nächste Wartung<input id="vehicleService" type="date"></label>
+</div><div class="dialog-actions"><button class="secondary" type="button" data-close>Abbrechen</button><button class="primary" type="submit">Speichern</button></div></form></dialog>
+<script type="module">
+'use strict';
+const $=id=>document.getElementById(id);
+$('brandLogo').addEventListener('error',()=>{$('brandLogo').hidden=true;$('brandFallback').hidden=false});
+if($('brandLogo').complete&&!$('brandLogo').naturalWidth){$('brandLogo').hidden=true;$('brandFallback').hidden=false}
+const now=new Date();$('today').textContent=new Intl.DateTimeFormat('de-DE',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(now);$('today').dateTime=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;$('year').textContent=now.getFullYear();
+const STORAGE_KEY='velog:fuhrpark:vehicles:v1';let vehicles=[];let firebaseAuth=null,firebaseSignOut=null,signedInUser=null,currentRole=null;
+function readVehicles(){try{const raw=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');vehicles=Array.isArray(raw)?raw.filter(v=>v&&typeof v.id==='string'&&typeof v.model==='string'&&typeof v.plate==='string').map(v=>({id:v.id,model:v.model.slice(0,100),plate:v.plate.slice(0,20),driver:typeof v.driver==='string'?v.driver.slice(0,100):'',status:['Verfügbar','Im Einsatz','Wartung'].includes(v.status)?v.status:'Verfügbar',service:typeof v.service==='string'?v.service:''})):[]}catch{vehicles=[];$('dataNotice').textContent='Der Browserspeicher konnte nicht gelesen werden. Prüfe die Browser-Einstellungen.'}renderVehicles()}
+function saveVehicles(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(vehicles));$('dataNotice').textContent='Fahrzeuge werden lokal in diesem Browser gespeichert. Die Seite ist noch nicht mit deiner Firebase-Datenbank verbunden; die Einträge werden nicht zwischen Geräten synchronisiert.'}catch{$('dataNotice').textContent='Speichern fehlgeschlagen: Der Browserspeicher ist nicht verfügbar.'}}
+function serviceDue(v){if(!v.service)return false;const today=new Date();today.setHours(0,0,0,0);const d=new Date(v.service+'T00:00:00');return !Number.isNaN(d.getTime())&&d<=today}
+function formatDate(value){if(!value)return '—';const d=new Date(value+'T00:00:00');return Number.isNaN(d.getTime())?'—':new Intl.DateTimeFormat('de-DE').format(d)}
+function statusClass(status){return status==='Verfügbar'?'available':status==='Im Einsatz'?'assigned':'service'}
+function updateMetrics(){$('totalCount').textContent=vehicles.length;$('assignedCount').textContent=vehicles.filter(v=>v.status==='Im Einsatz').length;$('availableCount').textContent=vehicles.filter(v=>v.status==='Verfügbar').length;$('serviceCount').textContent=vehicles.filter(serviceDue).length}
+function makeIcon(name){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.classList.add('icon');svg.setAttribute('aria-hidden','true');const use=document.createElementNS('http://www.w3.org/2000/svg','use');use.setAttribute('href','#'+name);svg.append(use);return svg}
+function renderVehicles(){const query=$('searchInput').value.trim().toLocaleLowerCase('de-DE'),status=$('statusFilter').value;const shown=vehicles.filter(v=>(!status||v.status===status)&&[v.model,v.plate,v.driver].join(' ').toLocaleLowerCase('de-DE').includes(query));$('vehicleRows').replaceChildren();for(const v of shown){const tr=document.createElement('tr');for(const value of [v.model,v.plate,v.driver||'Nicht zugeordnet']){const td=document.createElement('td');td.textContent=value;tr.append(td)}const statusTd=document.createElement('td'),badge=document.createElement('span');badge.className='status '+statusClass(v.status);badge.textContent=v.status;statusTd.append(badge);tr.append(statusTd);const dateTd=document.createElement('td');dateTd.textContent=formatDate(v.service);tr.append(dateTd);const actions=document.createElement('td'),wrap=document.createElement('div');wrap.className='row-actions';const edit=document.createElement('button');edit.type='button';edit.className='small-btn';edit.textContent='Bearbeiten';edit.addEventListener('click',()=>openEdit(v.id));const del=document.createElement('button');del.type='button';del.className='small-btn';del.textContent='Löschen';del.addEventListener('click',()=>{if(confirm('Fahrzeug '+v.plate+' wirklich löschen?')){vehicles=vehicles.filter(item=>item.id!==v.id);saveVehicles();renderVehicles()}});wrap.append(edit,del);actions.append(wrap);tr.append(actions);$('vehicleRows').append(tr)}$('emptyState').hidden=shown.length>0;updateMetrics()}
+function openEdit(id){const v=vehicles.find(item=>item.id===id);$('vehicleForm').reset();$('vehicleId').value=v?.id||'';$('vehicleModel').value=v?.model||'';$('vehiclePlate').value=v?.plate||'';$('vehicleDriver').value=v?.driver||'';$('vehicleStatus').value=v?.status||'Verfügbar';$('vehicleService').value=v?.service||'';$('vehicleDialogTitle').textContent=v?'Fahrzeug bearbeiten':'Fahrzeug hinzufügen';$('vehicleDialog').showModal();$('vehicleModel').focus()}
+$('addVehicle').addEventListener('click',()=>openEdit(''));$('vehicleForm').addEventListener('submit',event=>{event.preventDefault();const id=$('vehicleId').value||((globalThis.crypto?.randomUUID)?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2)}`);const item={id,model:$('vehicleModel').value.trim(),plate:$('vehiclePlate').value.trim().toLocaleUpperCase('de-DE'),driver:$('vehicleDriver').value.trim(),status:$('vehicleStatus').value,service:$('vehicleService').value};if(!item.model||!item.plate)return;const index=vehicles.findIndex(v=>v.id===id);if(index>=0)vehicles[index]=item;else vehicles.push(item);saveVehicles();renderVehicles();$('vehicleDialog').close()});
+$('searchInput').addEventListener('input',renderVehicles);$('statusFilter').addEventListener('change',renderVehicles);document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>btn.closest('dialog').close()));document.querySelectorAll('[data-dialog]').forEach(trigger=>trigger.addEventListener('click',event=>{event.preventDefault();$(trigger.dataset.dialog).showModal()}));
+const firebaseConfig=window.VELOG_FIREBASE_CONFIG;
+function readableRole(role){return{mitarbeiter:'Mitarbeiter',administrator:'Administrator',admin:'Administrator',superadmin:'Superadministrator'}[role]||'Rolle nicht hinterlegt'}
+async function startFirebase(){try{const [appSDK,authSDK]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js')]);const app=appSDK.initializeApp(firebaseConfig);firebaseAuth=authSDK.getAuth(app);firebaseSignOut=authSDK.signOut;authSDK.onAuthStateChanged(firebaseAuth,user=>{signedInUser=user;$('userEmail').textContent=user?.email||'Gastansicht';$('sessionLabel').textContent=user?'Angemeldet':'Nicht angemeldet';$('avatar').textContent=(user?.email||'VE').slice(0,2).toUpperCase();$('sessionAction').textContent=user?'Abmelden':'Anmelden';$('sessionButton').disabled=false;$('profileError').hidden=true;document.querySelectorAll('[data-admin-only]').forEach(el=>{el.hidden=!!user?false:true});if(!user){$('dataNotice').textContent='Fahrzeuge werden in diesem Browser gespeichert. Melde dich an, um die Verwaltungsnavigation zu verwenden. Die Fahrzeugdaten sind nicht mit Firebase synchronisiert.'}})}catch{$('sessionLabel').textContent='Firebase nicht verfügbar';$('sessionButton').disabled=false}}
+$('sessionButton').addEventListener('click',async()=>{try{if(signedInUser&&firebaseAuth){await firebaseSignOut(firebaseAuth);window.location.href='../../index.html'}else window.location.href='../../index.html'}catch{$('profileError').textContent='Abmeldung fehlgeschlagen. Bitte versuche es erneut.';$('profileError').hidden=false}});
+readVehicles();startFirebase();
+</script>
+</body>
+</html>

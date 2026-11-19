@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#922f2b">
+<script src="assets/js/firebase-config.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VE-Log | Anmeldung</title>
+<link rel="stylesheet" href="assets/css/index.css">
+</head>
+<body>
+<main class="login-box">
+  <div class="logo"><img src="assets/img/logo.png" alt="VE-Log GmbH"></div>
+  <h1>Herzlich Willkommen</h1>
+  <p class="intro">Melde dich mit deinen Zugangsdaten bei VE-Log an.</p>
+
+  <form id="loginForm">
+    <label for="email">E-Mail-Adresse</label>
+    <input id="email" name="email" type="email" placeholder="name@beispiel.de" autocomplete="username" required>
+    <label for="passwort">Passwort</label>
+    <input id="passwort" name="password" type="password" placeholder="Passwort eingeben" autocomplete="current-password" required>
+    <p class="forgot-password">Passwort vergessen? <a href="#" id="resetPasswordLink">Passwort zurücksetzen</a></p>
+    <button class="primary" id="loginButton" type="submit">Anmelden</button>
+  </form>
+
+  <button class="link-button guest-link" id="guestLoginButton" type="button">Zum Gast-Login</button>
+  <div class="divider"></div>
+  <h2 class="section-title">Noch kein Konto?</h2>
+  <p class="small-text">Wähle aus, welches Konto du erstellen möchtest.</p>
+  <a class="link-button" href="pages/auth/registrieren.html">Als Mitarbeiter registrieren</a>
+  <a class="link-button" href="pages/auth/registrieren-gast.html">Als Gast registrieren</a>
+  <p id="status" class="status" role="status" aria-live="polite"></p>
+</main>
+
+<script type="module">
+import {initializeApp, getApps} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {getDatabase, ref, get} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
+const firebaseConfig = window.VELOG_FIREBASE_CONFIG;
+
+const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const form = document.getElementById("loginForm");
+const loginButton = document.getElementById("loginButton");
+const guestButton = document.getElementById("guestLoginButton");
+const resetLink = document.getElementById("resetPasswordLink");
+const statusEl = document.getElementById("status");
+let busy = false;
+
+const destinations = {
+  gast: "pages/gast/dashboard.html",
+  mitarbeiter: "pages/mitarbeiter/dashboard.html",
+  manager: "pages/mitarbeiter/dashboard.html",
+  admin: "pages/mitarbeiter/dashboard.html",
+  superadmin: "pages/mitarbeiter/dashboard.html"
+};
+
+function showStatus(message, type="") {
+  statusEl.textContent = message;
+  statusEl.className = "status" + (type ? " " + type : "");
+}
+
+function errorText(error) {
+  const messages = {
+    "auth/invalid-email": "Bitte gib eine gültige E-Mail-Adresse ein.",
+    "auth/invalid-credential": "E-Mail-Adresse oder Passwort ist falsch.",
+    "auth/user-disabled": "Dieses Konto wurde deaktiviert.",
+    "auth/too-many-requests": "Zu viele Anmeldeversuche. Bitte später erneut versuchen.",
+    "auth/network-request-failed": "Netzwerkfehler. Bitte Internetverbindung prüfen.",
+    "auth/operation-not-allowed": "E-Mail-/Passwort-Anmeldung ist in Firebase nicht aktiviert.",
+    "PERMISSION_DENIED": "Firebase verweigert den Zugriff auf die Rolleninformationen. Bitte Realtime-Database-Regeln prüfen.",
+    "database/permission-denied": "Firebase verweigert den Zugriff auf die Rolleninformationen. Bitte Realtime-Database-Regeln prüfen."
+  };
+  return messages[error.code] || error.message || "Die Aktion ist fehlgeschlagen.";
+}
+
+resetLink.addEventListener("click", async (event) => {
+  event.preventDefault();
+  const email = document.getElementById("email").value.trim();
+  if (!email) {
+    showStatus("Bitte zuerst deine E-Mail-Adresse eingeben.", "error");
+    document.getElementById("email").focus();
+    return;
+  }
+  resetLink.style.pointerEvents = "none";
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showStatus("Falls ein Konto zu dieser Adresse besteht, wurde eine E-Mail zum Zurücksetzen versendet. Bitte auch den Spam-Ordner prüfen.", "success");
+  } catch (error) {
+    console.error(error);
+    showStatus(errorText(error), "error");
+  } finally {
+    resetLink.style.pointerEvents = "";
+  }
+});
+
+async function login(event, requireGuest=false) {
+  event.preventDefault();
+  if (busy) return;
+  busy = true;
+  loginButton.disabled = true;
+  guestButton.disabled = true;
+  showStatus("Anmeldung läuft ...");
+  let signedInUser = null;
+
+  try {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("passwort").value;
+    const credential = await signInWithEmailAndPassword(auth, email, password);
+    signedInUser = credential.user;
+
+    const snapshot = await get(ref(db, "roles/" + signedInUser.uid));
+    if (!snapshot.exists()) throw new Error("Für dieses Konto ist keine Rolle hinterlegt. Bitte Administrator kontaktieren.");
+
+    const role = snapshot.val();
+    if (!["gast","mitarbeiter","manager","admin","superadmin"].includes(role)) {
+      throw new Error("Für dieses Konto ist keine gültige Rolle hinterlegt.");
+    }
+    if (requireGuest && role !== "gast") {
+      throw new Error("Dieses Konto ist kein Gastkonto. Bitte normal anmelden.");
+    }
+
+    showStatus("Anmeldung erfolgreich. Weiterleitung ...", "success");
+    window.location.replace(destinations[role]);
+  } catch (error) {
+    console.error("Anmeldefehler:", error);
+    if (signedInUser && auth.currentUser) {
+      try { await signOut(auth); } catch (e) { console.error(e); }
+    }
+    showStatus(errorText(error), "error");
+    busy = false;
+    loginButton.disabled = false;
+    guestButton.disabled = false;
+  }
+}
+
+form.addEventListener("submit", (event) => login(event, false));
+guestButton.addEventListener("click", (event) => login(event, true));
+</script>
+</body>
+</html>

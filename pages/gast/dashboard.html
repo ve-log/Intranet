@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="de">
+<head>
+<link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+<link rel="manifest" href="../../manifest.json">
+<meta name="theme-color" content="#922f2b">
+<script src="../../assets/js/firebase-config.js"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VE-Log | Gastportal</title>
+<link rel="stylesheet" href="../../assets/css/dashboard-2.css">
+</head>
+<body>
+<div id="loading" class="gate"><h2>VE-Log Gastportal</h2><p>Dein Bereich wird sicher geladen …</p></div>
+<div id="denied" class="gate hidden"><h2>Kein Zugriff</h2><p>Diese Seite ist nur für angemeldete Gastkonten vorgesehen.</p><a class="action" href="../../index.html">Zur Anmeldung →</a></div>
+<div id="app" class="hidden">
+<aside class="sidebar">
+<a class="brand" href="dashboard.html" aria-label="VE-Log Gastportal"><img src="../../assets/img/logo.png" alt="VE-Log Gastportal" onerror="this.style.display='none';this.nextElementSibling.classList.remove('hidden')"><span class="fallback hidden">VE-Log<small>GÄSTEPORTAL</small></span></a>
+<div class="navlabel">MEIN BEREICH</div><nav class="nav"><a class="active" href="#uebersicht"><span class="ni" aria-hidden="true">▦</span>Übersicht</a><a href="nachweise.html"><span class="ni" aria-hidden="true">▣</span>Meine Nachweise</a><a href="#profil"><span class="ni" aria-hidden="true">♙</span>Mein Profil</a><a href="einstellungen.html"><span class="ni" aria-hidden="true">⚙</span>Einstellungen</a></nav>
+<div class="sidefoot">Deine Formulare und Nachweise.<br>Einfach an einem Ort.</div>
+</aside>
+<main class="main">
+<header class="topbar"><div class="crumb">Mein Bereich&nbsp; / &nbsp;<strong>Gast-Dashboard</strong></div><div class="account"><div class="avatar" id="avatar">GA</div><div class="meta"><strong id="accountName">Gast</strong><span id="accountEmail">Angemeldet als Gast</span></div><button class="logout" id="logout">⇥ &nbsp; Abmelden</button></div></header>
+<div class="content" id="uebersicht">
+<section class="intro"><div><div class="eyebrow">Gastbereich</div><h1 id="welcome">Willkommen bei VE-Log.</h1><p class="subtitle">Hier kannst du deine Formulare auswählen, deine Nachweise einsehen und dein Profil bearbeiten.</p></div><div class="role">♙ &nbsp; Angemeldet als Gast</div></section>
+<section class="card"><div class="sectionhead"><div><h2>Dein Bereich</h2><p class="desc">Die wichtigsten Funktionen an einem Ort.</p></div></div><div class="quick">
+<a class="quickcard" href="#formulare"><div class="qicon">▤</div><div class="qcopy"><h3>Formulare</h3><p>Wähle ein Formular aus, um es zu öffnen und auszufüllen.</p><span class="action">Formulare öffnen →</span></div></a>
+<a class="quickcard" href="nachweise.html"><div class="qicon blue">▣</div><div class="qcopy"><h3>Meine Nachweise</h3><p>Hier findest du deine bereits gespeicherten Formulare und Nachweise.</p><span class="action">Nachweise anzeigen →</span></div></a>
+<a class="quickcard" href="#profil"><div class="qicon green">♙</div><div class="qcopy"><h3>Mein Profil</h3><p>Bearbeite deine persönlichen Daten und speichere sie.</p><span class="action">Profil bearbeiten →</span></div></a>
+</div></section>
+<section class="card" id="formulare"><div class="sectionhead"><div><h2>Formulare</h2><p class="desc">Wähle das Formular, das du ausfüllen möchtest.</p></div><span class="pill">11 FORMULARE</span></div>
+<div class="forms">
+<a class="formlink" href="arbeitsnachweis.html"><span class="ficon">▤</span><span class="fcopy"><h3>Arbeitsnachweis</h3><p>Arbeitszeiten und ausgeführte Arbeiten erfassen.</p><span class="open">Formular öffnen →</span></span><span class="farrow">→</span></a>
+<a class="formlink" href="arbeitsnachweis-lkw.html"><span class="ficon blue">▣</span><span class="fcopy"><h3>Arbeitsnachweis LKW</h3><p>Fahrzeug- und LKW-Arbeiten dokumentieren.</p><span class="open">Formular öffnen →</span></span><span class="farrow">→</span></a>
+<a class="formlink" href="baustelle.html"><span class="ficon gold">⌂</span><span class="fcopy"><h3>Baustelle</h3><p>Baustellenbezogene Angaben erfassen.</p><span class="open">Bereich öffnen →</span></span><span class="farrow">→</span></a>
+<a class="formlink" href="fuhrunternehmer.html"><span class="ficon blue">▣</span><span class="fcopy"><h3>Fuhrunternehmer</h3><p>Angaben zum Fuhrunternehmen erfassen.</p><span class="open">Formular öffnen →</span></span><span class="farrow">→</span></a>
+<a class="formlink" href="leistungsnachweis.html"><span class="ficon green">▤</span><span class="fcopy"><h3>Leistungsnachweis</h3><p>Erbrachte Leistungen dokumentieren.</p><span class="open">Formular öffnen →</span></span><span class="farrow">→</span></a>
+<a class="formlink" href="lieferschein.html"><span class="ficon">▤</span><span class="fcopy"><h3>Lieferschein</h3><p>Lieferungen und Lieferscheindaten erfassen.</p><span class="open">Formular öffnen →</span></span><span class="farrow">→</span></a>
+<a class="formlink" href="material-absender.html"><span class="ficon gold">⬡</span><span class="fcopy"><h3>Material · Absender</h3><p>Materialversand durch den Absender dokumentieren.</p><span class="open">Formular öffnen →</span></span><span class="farrow">→</span></a>
+<a class="formlink" href="material-baustelle.html"><span class="ficon green">⌂</span><span class="fcopy"><h3>Material · Baustelle</h3><p>Materialangaben zur Baustelle erfassen.</p><span class="open">Formular öffnen →</span></span><span class="farrow">→</span></a>
+<a class="formlink" href="material-empfaenger.html"><span class="ficon blue">⬡</span><span class="fcopy"><h3>Material · Empfänger</h3><p>Angaben zum Materialempfänger dokumentieren.</p><span class="open">Formular öffnen →</span></span><span class="farrow">→</span></a>
+<a class="formlink" href="materialausgabe.html"><span class="ficon gold">▤</span><span class="fcopy"><h3>Materialausgabe</h3><p>Die Ausgabe von Material erfassen.</p><span class="open">Formular öffnen →</span></span><span class="farrow">→</span></a>
+<a class="formlink" href="materialversand.html"><span class="ficon green">➤</span><span class="fcopy"><h3>Materialversand</h3><p>Den Versand von Material dokumentieren.</p><span class="open">Formular öffnen →</span></span><span class="farrow">→</span></a>
+</div></section>
+<section class="card" id="profil"><div class="sectionhead"><div><h2>Mein Profil</h2><p class="desc">Hier kannst du deine persönlichen Kontaktdaten aktualisieren.</p></div></div>
+<form id="profileForm"><div class="profilegrid">
+<div class="field"><label for="vorname">Vorname</label><input id="vorname" maxlength="80" autocomplete="given-name" required></div>
+<div class="field"><label for="nachname">Nachname</label><input id="nachname" maxlength="80" autocomplete="family-name" required></div>
+<div class="field"><label for="handy">Handynummer</label><input id="handy" type="tel" maxlength="40" autocomplete="tel"></div>
+<div class="field"><label for="email">E-Mail-Adresse</label><input id="email" type="email" readonly disabled></div>
+</div><div class="actions"><button class="primary" type="submit">Änderungen speichern</button><span class="status" id="status" role="status"></span></div></form></section>
+<footer class="footer"><span>© <span id="year"></span> VE-Log · Gästeportal</span><a href="#profil">Kontoeinstellungen ↑</a></footer>
+</div>
+<ve-log-widget></ve-log-widget>
+</main></div>
+<script type="module">
+import {initializeApp,getApps} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {getAuth,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {getDatabase,ref,get,update} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+const firebaseConfig=window.VELOG_FIREBASE_CONFIG;
+const app=getApps().length?getApps()[0]:initializeApp(firebaseConfig),auth=getAuth(app),db=getDatabase(app),$=id=>document.getElementById(id);
+$("year").textContent=new Date().getFullYear();
+function show(id){$(id).classList.remove("hidden")}function hide(id){$(id).classList.add("hidden")}
+onAuthStateChanged(auth,async user=>{
+ hide("app");hide("denied");show("loading");
+ if(!user){hide("loading");show("denied");return}
+ try{
+  const role=await get(ref(db,"roles/"+user.uid));
+  if(!role.exists()||role.val()!=="gast"){await signOut(auth);hide("loading");show("denied");return}
+  const snap=await get(ref(db,"users/"+user.uid)),p=snap.exists()?snap.val():{},first=p.vorname||"",last=p.nachname||"",name=(first+" "+last).trim()||"Gast";
+  $("accountName").textContent=name;$("accountEmail").textContent=user.email||"Angemeldet als Gast";
+  $("avatar").textContent=(first.charAt(0)+last.charAt(0)).toUpperCase()||"GA";
+  $("welcome").textContent=first?"Willkommen bei VE-Log, "+first+".":"Willkommen bei VE-Log.";
+  $("vorname").value=first;$("nachname").value=last;$("handy").value=p.handy||"";$("email").value=user.email||p.email||"";
+  hide("loading");show("app");
+ }catch(e){console.error(e);hide("loading");show("denied")}
+});
+$("profileForm").addEventListener("submit",async e=>{
+ e.preventDefault();const user=auth.currentUser;if(!user){$("status").textContent="Bitte erneut anmelden.";return}
+ const vorname=$("vorname").value.trim(),nachname=$("nachname").value.trim(),handy=$("handy").value.trim();
+ if(!vorname||!nachname){$("status").textContent="Bitte Vor- und Nachnamen eintragen.";return}
+ const btn=$("profileForm").querySelector("button");btn.disabled=true;btn.textContent="Wird gespeichert …";$("status").textContent="";
+ try{await update(ref(db,"users/"+user.uid),{vorname,nachname,handy});$("accountName").textContent=vorname+" "+nachname;$("avatar").textContent=(vorname[0]+nachname[0]).toUpperCase();$("welcome").textContent="Willkommen bei VE-Log, "+vorname+".";$("status").textContent="Dein Profil wurde gespeichert."}
+ catch(err){console.error(err);$("status").textContent="Speichern fehlgeschlagen. Bitte prüfe deine Datenbankregeln."}
+ finally{btn.disabled=false;btn.textContent="Änderungen speichern"}
+});
+$("logout").addEventListener("click",async()=>{try{await signOut(auth);location.href="../../index.html"}catch(e){alert("Abmelden ist gerade nicht möglich. Bitte versuche es erneut.")}});
+</script>
+<script type="module">
+class VeLogGuestWidget extends HTMLElement {
+  connectedCallback() {
+    if (this.shadowRoot) return;
+    const root = this.attachShadow({ mode: 'open' });
+    root.innerHTML = `
+      <style>
+        :host{display:block;color:#232735;font:14px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+        .wrap{position:relative;display:flex;flex-direction:column;align-items:flex-end}
+        .toggle{width:56px;height:56px;border:0;border-radius:50%;background:#8e2f2b;color:#fff;font-size:22px;font-weight:750;cursor:pointer;box-shadow:0 5px 18px #21253630;transition:transform .16s ease,background .16s ease}
+        .toggle:hover{background:#68201f;transform:translateY(-2px)}
+        .panel{width:min(320px,calc(100vw - 32px));margin-bottom:12px;padding:18px;background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 10px 32px #21253620}
+        .head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px}
+        h2{margin:0;font-size:16px;line-height:1.35}
+        p{margin:0 0 12px;color:#727785;font-size:12px}
+        .close{width:30px;height:30px;border:0;border-radius:8px;background:#f3f4f6;color:#555;font-size:19px;cursor:pointer}
+        .links{display:grid;gap:8px}
+        a{display:block;padding:10px 11px;border:1px solid #e5e7eb;border-radius:9px;color:#8e2f2b;font-size:12px;font-weight:700;text-decoration:none}
+        a:hover{background:#fbf5f5;border-color:#d9b9b7}
+        button:focus-visible,a:focus-visible{outline:3px solid #bd7774;outline-offset:3px}
+        @media(prefers-reduced-motion:reduce){.toggle{transition:none}}
+      </style>
+      <div class="wrap">
+        <section class="panel" id="panel" aria-labelledby="title" hidden>
+          <div class="head"><h2 id="title">Wie können wir helfen?</h2><button class="close" type="button" aria-label="Schnellzugriff schließen">×</button></div>
+          <p>Öffne direkt einen Bereich deines Gastportals.</p>
+          <nav class="links" aria-label="Gastportal-Schnellzugriff">
+            <a href="#formulare">Formulare auswählen →</a>
+            <a href="nachweise.html">Meine Nachweise →</a>
+            <a href="#profil">Mein Profil →</a>
+          </nav>
+        </section>
+        <button class="toggle" type="button" aria-label="Schnellzugriff öffnen" aria-expanded="false" aria-controls="panel">?</button>
+      </div>`;
+
+    const panel = root.querySelector('#panel');
+    const toggle = root.querySelector('.toggle');
+    const close = root.querySelector('.close');
+    const setOpen = open => {
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Schnellzugriff schließen' : 'Schnellzugriff öffnen');
+      if (!open) toggle.focus();
+    };
+    toggle.addEventListener('click', () => setOpen(panel.hidden));
+    close.addEventListener('click', () => setOpen(false));
+    root.querySelectorAll('a').forEach(link => link.addEventListener('click', () => setOpen(false)));
+    root.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !panel.hidden) setOpen(false);
+    });
+  }
+}
+customElements.define('ve-log-widget', VeLogGuestWidget);
+</script>
+</body></html>

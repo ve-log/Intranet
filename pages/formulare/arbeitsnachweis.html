@@ -1,0 +1,372 @@
+<DOCTYPE html>
+<html lang="de">
+  <head>
+<link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+<script src="../../assets/js/firebase-config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>
+      Arbeitsnachweis · VE-Log
+    </title>
+    <link rel="stylesheet" href="../../assets/css/arbeitsnachweis.css">
+  <link rel="stylesheet" href="../../assets/css/arbeitsnachweis-lkw-2.css">
+</head>
+  <body data-nachweis-typ="arbeitsnachweis" data-nachweis-titel="Arbeitsnachweis">
+    <div class="container">
+      <nav class="nav-buttons" aria-label="Hauptnavigation">
+        <a class="nav-btn" href="formular.html">
+          📋 Formulare
+        </a>
+        <a class="nav-btn" href="../mitarbeiter/dashboard.html">
+          🏠 Dashboard
+        </a>
+        <a class="nav-btn" href="nachweise.html">
+          ▣ Meine Nachweise
+        </a>
+      </nav>
+      <div class="ve-form-heading"><h1>
+        Arbeitsnachweis
+      </h1><div class="ve-form-brand" aria-label="VE-LOG Firmendaten"><img src="../../assets/img/logo.png" alt="VE-LOG Logo"><p>Flächenmanagement · Umschlag · Transport<br>Sperberweg 15 · 91056 Erlangen<br>Tel. 09131 / 7515-10</p></div></div>
+      <form id="nachweisForm">
+        <div class="row row-3">
+          <div>
+            <label for="name">
+              Name
+            </label>
+            <input id="name" name="name" type="text" required>
+          </div>
+          <div>
+            <label for="datum">
+              Datum
+            </label>
+            <input id="datum" name="datum" type="date" required>
+          </div>
+          <div>
+            <label for="stunden">
+              Std.
+            </label>
+            <input id="stunden" name="stunden" type="number" min="0" step="0.25">
+          </div>
+        </div>
+        <div class="weekdays">
+          <label for="tag0">
+            <input id="tag0" name="tag0" type="checkbox">
+            Mo
+          </label>
+          <label for="tag1">
+            <input id="tag1" name="tag1" type="checkbox">
+            Di
+          </label>
+          <label for="tag2">
+            <input id="tag2" name="tag2" type="checkbox">
+            Mi
+          </label>
+          <label for="tag3">
+            <input id="tag3" name="tag3" type="checkbox">
+            Do
+          </label>
+          <label for="tag4">
+            <input id="tag4" name="tag4" type="checkbox">
+            Fr
+          </label>
+          <label for="tag5">
+            <input id="tag5" name="tag5" type="checkbox">
+            Sa
+          </label>
+          <label for="tag6">
+            <input id="tag6" name="tag6" type="checkbox">
+            So
+          </label>
+          <label for="tag7">
+            <input id="tag7" name="tag7" type="checkbox">
+            Sonn-/Feiertag
+          </label>
+        </div>
+        <div class="row row-3">
+          <div>
+            <label for="abwesenheitVon">
+              Abwesenheit von
+            </label>
+            <input id="abwesenheitVon" name="abwesenheitVon" type="time">
+          </div>
+          <div>
+            <label for="abwesenheitBis">
+              bis
+            </label>
+            <input id="abwesenheitBis" name="abwesenheitBis" type="time">
+          </div>
+          <div>
+            <label for="abwesenheitStunden">
+              Std.
+            </label>
+            <input
+              id="abwesenheitStunden"
+              name="abwesenheitStunden"
+              type="number"
+              min="0"
+              step="0.25"
+            >
+          </div>
+        </div>
+        <div class="row row-4">
+          <div>
+            <label for="arbeitsbeginn">
+              Arbeitsbeginn
+            </label>
+            <input id="arbeitsbeginn" name="arbeitsbeginn" type="time">
+          </div>
+          <div>
+            <label for="pause">
+              Pause (Minuten)
+            </label>
+            <input id="pause" name="pause" type="number" min="0" step="0.25">
+          </div>
+          <div>
+            <label for="arbeitsende">
+              Arbeitsende
+            </label>
+            <input id="arbeitsende" name="arbeitsende" type="time">
+          </div>
+          <div>
+            <label for="arbeitsstunden">
+              Arb.-Std.
+            </label>
+            <input id="arbeitsstunden" name="arbeitsstunden" type="number" min="0" step="0.25">
+          </div>
+        </div>
+        <div class="row row-3">
+          <div>
+            <label for="firma">
+              Firma
+            </label>
+            <input id="firma" name="firma" type="text">
+          </div>
+          <div>
+            <label for="kilometer">
+              Kilometer
+            </label>
+            <input id="kilometer" name="kilometer" type="number" min="0" step="0.25">
+          </div>
+          <div>
+            <label for="fahrstunden">
+              Fahr.-Std.
+            </label>
+            <input id="fahrstunden" name="fahrstunden" type="number" min="0" step="0.25">
+          </div>
+        </div>
+        <div class="row row-3">
+          <div>
+            <label for="bv">
+              BV
+            </label>
+            <input id="bv" name="bv" type="text">
+          </div>
+          <div>
+            <label for="kostenstelle">
+              K.-Stelle
+            </label>
+            <input id="kostenstelle" name="kostenstelle" type="text">
+          </div>
+          <div>
+            <label for="gesamtstunden">
+              ges.-Std.
+            </label>
+            <input id="gesamtstunden" name="gesamtstunden" type="number" min="0" step="0.25">
+          </div>
+        </div>
+        <h3>
+          Ausgeführte Arbeiten
+        </h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">
+                  Uhrzeit von–bis
+                </th>
+                <th scope="col">
+                  Ausgeführte Arbeiten (Platz, Gerät, Material, Tätigkeit)
+                </th>
+                <th scope="col">
+                  Arbeitsstunden
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <input id="zeit_1" name="zeit_1" type="text" aria-label="Uhrzeit von-bis - Zeile 1">
+                </td>
+                <td>
+                  <input
+                    id="taetigkeit_1"
+                    name="taetigkeit_1"
+                    type="text"
+                    aria-label="Ausgeführte Arbeiten - Zeile 1"
+                  >
+                </td>
+                <td>
+                  <input
+                    id="stundenZeile_1"
+                    name="stundenZeile_1"
+                    type="number"
+                    aria-label="Arbeitsstunden - Zeile 1"
+                    min="0"
+                    step="0.25"
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <input id="zeit_2" name="zeit_2" type="text" aria-label="Uhrzeit von-bis - Zeile 2">
+                </td>
+                <td>
+                  <input
+                    id="taetigkeit_2"
+                    name="taetigkeit_2"
+                    type="text"
+                    aria-label="Ausgeführte Arbeiten - Zeile 2"
+                  >
+                </td>
+                <td>
+                  <input
+                    id="stundenZeile_2"
+                    name="stundenZeile_2"
+                    type="number"
+                    aria-label="Arbeitsstunden - Zeile 2"
+                    min="0"
+                    step="0.25"
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <input id="zeit_3" name="zeit_3" type="text" aria-label="Uhrzeit von-bis - Zeile 3">
+                </td>
+                <td>
+                  <input
+                    id="taetigkeit_3"
+                    name="taetigkeit_3"
+                    type="text"
+                    aria-label="Ausgeführte Arbeiten - Zeile 3"
+                  >
+                </td>
+                <td>
+                  <input
+                    id="stundenZeile_3"
+                    name="stundenZeile_3"
+                    type="number"
+                    aria-label="Arbeitsstunden - Zeile 3"
+                    min="0"
+                    step="0.25"
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <input id="zeit_4" name="zeit_4" type="text" aria-label="Uhrzeit von-bis - Zeile 4">
+                </td>
+                <td>
+                  <input
+                    id="taetigkeit_4"
+                    name="taetigkeit_4"
+                    type="text"
+                    aria-label="Ausgeführte Arbeiten - Zeile 4"
+                  >
+                </td>
+                <td>
+                  <input
+                    id="stundenZeile_4"
+                    name="stundenZeile_4"
+                    type="number"
+                    aria-label="Arbeitsstunden - Zeile 4"
+                    min="0"
+                    step="0.25"
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <input id="zeit_5" name="zeit_5" type="text" aria-label="Uhrzeit von-bis - Zeile 5">
+                </td>
+                <td>
+                  <input
+                    id="taetigkeit_5"
+                    name="taetigkeit_5"
+                    type="text"
+                    aria-label="Ausgeführte Arbeiten - Zeile 5"
+                  >
+                </td>
+                <td>
+                  <input
+                    id="stundenZeile_5"
+                    name="stundenZeile_5"
+                    type="number"
+                    aria-label="Arbeitsstunden - Zeile 5"
+                    min="0"
+                    step="0.25"
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <input id="zeit_6" name="zeit_6" type="text" aria-label="Uhrzeit von-bis - Zeile 6">
+                </td>
+                <td>
+                  <input
+                    id="taetigkeit_6"
+                    name="taetigkeit_6"
+                    type="text"
+                    aria-label="Ausgeführte Arbeiten - Zeile 6"
+                  >
+                </td>
+                <td>
+                  <input
+                    id="stundenZeile_6"
+                    name="stundenZeile_6"
+                    type="number"
+                    aria-label="Arbeitsstunden - Zeile 6"
+                    min="0"
+                    step="0.25"
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <label for="bemerkungen" class="remarks-label">
+          Bemerkungen
+        </label>
+        <textarea id="bemerkungen" name="bemerkungen" rows="5">
+        </textarea>
+        <div class="actions">
+          <button id="saveNachweis" type="button" class="save-btn" disabled>
+            💾 Nachweis &amp; PDF speichern
+          </button>
+          <a class="nav-btn" href="nachweise.html">
+            ▣ Meine Nachweise / PDF senden
+          </a>
+          <button id="printNachweis" class="nav-btn" type="button">
+            🖨 Drucken / PDF
+          </button>
+          <a class="new-record" href="arbeitsnachweis.html?new=1">
+            + Neuer Nachweis
+          </a>
+        </div>
+        <p class="status" id="nachweisStatus" role="status">
+          Speicherfunktion wird geladen …
+        </p>
+        <p class="fine">
+          Beim Speichern werden Formulardaten und eine PDF gemeinsam gespeichert. Erneutes Speichern aktualisiert denselben Nachweis samt PDF. Unter „Meine Nachweise“ kannst du die PDF öffnen, herunterladen und teilen.
+        </p>
+      </form>
+    </div>
+    <script type="module" src="../../assets/js/nachweise-formular.js?v=6">
+    </script>
+    <script>
+      document.getElementById('printNachweis').addEventListener('click', () => {
+        window.print();
+      });
+    </script>
+  </body>
+</html>

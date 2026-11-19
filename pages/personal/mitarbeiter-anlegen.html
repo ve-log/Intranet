@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+<script src="../../assets/js/firebase-config.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Mitarbeiter anlegen · VE-Log</title>
+<link rel="stylesheet" href="../../assets/css/mitarbeiter-anlegen.css">
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt springen</a>
+<aside class="sidebar" aria-label="Hauptnavigation">
+ <a class="brand" href="../mitarbeiter/dashboard.html" aria-label="VE-Log Dashboard"><img id="brandLogo" class="brand-image" src="../../assets/img/logo.png" alt="VE-Log"><span class="wordmark" id="brandFallback" hidden>VE-Log</span><small>MITARBEITERPORTAL</small></a>
+ <div class="nav-label">ARBEITSPLATZ</div>
+ <nav class="nav"><a href="../mitarbeiter/dashboard.html">▦ Dashboard</a><a class="active" href="mitarbeiter-anlegen.html" aria-current="page">♙ Mitarbeiter anlegen</a><a href="personalmanagement.html">▤ Personalmanagement</a><a href="../formulare/formular.html">▧ Formulare</a><a href="../mitarbeiter/urlaub.html">▧ Urlaub</a><a href="../mitarbeiter/einstellungen.html">⚙ Einstellungen</a></nav>
+ <div class="side-bottom"><p class="side-note">VE-Log · Dein Arbeitsplatz<br>Alles an einem Ort.</p></div>
+</aside>
+<div class="shell">
+<header class="topbar"><div class="breadcrumb"><a href="../mitarbeiter/dashboard.html">Arbeitsplatz</a> / <strong>Mitarbeiter anlegen</strong></div><div class="account"><span class="avatar" id="topAvatar">…</span><div class="account-copy"><strong id="topName">Anmeldung wird geprüft</strong><span id="topRole">Bitte warten</span></div><button class="quiet-button" id="logout" type="button" disabled>Abmelden</button></div></header>
+<main id="main">
+ <div class="intro"><div><span class="eyebrow">PERSONALVERWALTUNG</span><h1>Mitarbeiter anlegen</h1><p class="muted">Erstelle ein Firebase-Benutzerkonto und das zugehörige Mitarbeiterprofil.</p></div></div>
+ <p class="notice" id="loadStatus" role="status" aria-live="polite">Anmeldung und Berechtigungen werden geprüft …</p>
+ <section class="access-denied" id="accessDenied" role="alert" hidden><strong>Zugriff nicht freigegeben</strong><p id="accessDeniedText" style="margin-top:6px">Nur Administratoren und Superadministratoren dürfen Mitarbeiterkonten anlegen.</p><p style="margin-top:12px"><a href="../mitarbeiter/dashboard.html"><u>Zurück zum Dashboard</u></a></p></section>
+ <section class="panel" id="createPanel" hidden>
+  <div class="panel-head"><h2>Neues Mitarbeiterkonto</h2><span class="tag">ADMINISTRATION</span></div>
+  <p class="helper" style="margin:-10px 0 20px">Das Konto erhält standardmäßig die Rolle „Mitarbeiter“. Die Person kann über eine E-Mail zum Zurücksetzen ihres Passworts ein eigenes Passwort festlegen.</p>
+  <form id="createForm" novalidate>
+   <div class="field-grid">
+    <div class="field"><label for="firstName">Vorname *</label><input id="firstName" name="firstName" autocomplete="given-name" maxlength="100" required></div>
+    <div class="field"><label for="lastName">Nachname *</label><input id="lastName" name="lastName" autocomplete="family-name" maxlength="100" required></div>
+    <div class="field"><label for="newEmployeeEmail">E-Mail-Adresse *</label><input id="newEmployeeEmail" name="email" type="email" autocomplete="email" maxlength="254" required></div>
+    <div class="field"><label for="phone">Telefonnummer</label><input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40"></div>
+    <div class="field"><label for="displayName">Anzeigename (optional)</label><input id="displayName" name="displayName" maxlength="80"></div>
+    <div class="field"><label for="department">Team / Abteilung (optional)</label><input id="department" name="department" maxlength="100"></div>
+   </div>
+   <p class="helper">Ein Mitarbeiterkonto wird erst nach bestätigter Berechtigung angelegt. Falls das Senden der Passwort-E-Mail fehlschlägt, kannst du sie nachträglich erneut senden.</p>
+   <div class="button-row"><button class="primary" id="createButton" type="submit" disabled>Mitarbeiter anlegen</button><button class="secondary" id="resetForm" type="reset">Formular leeren</button></div>
+  </form>
+  <p class="message" id="formStatus" role="status" aria-live="polite" hidden></p>
+ </section>
+ <section class="panel success-card" id="createdCard" hidden aria-live="polite"><h3 id="createdHeading">Mitarbeiterkonto angelegt</h3><p id="createdDescription"></p><div class="result-actions"><button id="resendResetEmail" type="button" hidden>Passwort-E-Mail erneut senden</button><button id="createAnother" type="button">Weiteren Mitarbeiter anlegen</button></div><p class="message" id="resetEmailStatus" role="status" hidden></p></section>
+ <section class="panel" id="requirementsPanel"><div class="panel-head"><h2>Voraussetzungen</h2><span class="tag">FIREBASE</span></div><ul class="status-list"><li>Firebase Authentication muss E-Mail und Passwort als Anmeldemethode aktiviert haben.</li><li>Die Realtime-Database-Regeln müssen Admins und Superadmins erlauben, Mitarbeiterprofile und Mitarbeiterrollen anzulegen.</li><li>Die Seite blendet das Formular nur für berechtigte Konten ein. Die Firebase-Regeln müssen dieselbe Berechtigung serverseitig erzwingen.</li><li>Die Bestätigungs- bzw. Passwortzurücksetzen-E-Mail muss in Firebase Authentication eingerichtet sein.</li></ul></section>
+ <footer class="bottom"><span>VE-Log · Mitarbeiterportal</span><a href="personalmanagement.html">Zur Personalverwaltung →</a></footer>
+</main>
+</div>
+<script type="module">
+'use strict';
+const $=id=>document.getElementById(id);
+const firebaseConfig=window.VELOG_FIREBASE_CONFIG;
+const roleNames={admin:'Administrator',superadmin:'Superadministrator'};
+let A=null,D=null,mainAuth=null,mainDb=null,mainApp=null,currentUser=null,currentRole=null,roleUnsubscribe=null,authReady=false,roleReady=false,allowed=false,submitting=false,createdEmail='',generation=0;
+const secondaryApps=new Set();
+function showMessage(id,text,error=false){const el=$(id);el.textContent=text;el.hidden=false;el.classList.toggle('error',error)}
+function clearMessage(id){const el=$(id);el.hidden=true;el.textContent='';el.classList.remove('error')}
+function friendlyError(error){const code=error?.code||'';const messages={
+ 'auth/email-already-in-use':'Für diese E-Mail-Adresse existiert bereits ein Firebase-Konto.',
+ 'auth/invalid-email':'Bitte gib eine gültige E-Mail-Adresse ein.',
+ 'auth/weak-password':'Firebase hat das automatisch erstellte Startpasswort abgelehnt. Prüfe die Passwortregeln in Firebase Authentication.',
+ 'auth/operation-not-allowed':'Aktiviere in Firebase Authentication die Anmeldemethode „E-Mail/Passwort“.',
+ 'auth/network-request-failed':'Firebase ist nicht erreichbar. Prüfe die Internetverbindung und versuche es erneut.',
+ 'auth/too-many-requests':'Zu viele Versuche. Warte kurz und versuche es später erneut.',
+ 'auth/unauthorized-continue-uri':'Die Website-Domain ist für Firebase-E-Mailaktionen nicht autorisiert.',
+ 'auth/missing-continue-uri':'Die Firebase-E-Mailaktion konnte nicht vorbereitet werden.',
+ 'PERMISSION_DENIED':'Firebase-Regeln verweigern den Schreibzugriff. Prüfe, ob Admins und Superadmins Mitarbeiterprofile und Mitarbeiterrollen anlegen dürfen.',
+ 'database/permission-denied':'Firebase-Regeln verweigern den Schreibzugriff. Prüfe die Berechtigungen für Benutzerprofile und Rollen.'};
+ if(messages[code])return messages[code];
+ if(code.includes('permission-denied')||code==='PERMISSION_DENIED')return messages['PERMISSION_DENIED'];
+ return 'Die Aktion konnte nicht abgeschlossen werden. Prüfe deine Verbindung und die Firebase-Konfiguration.';
+}
+function setAccessState(){
+ if(!authReady){$('loadStatus').hidden=false;$('loadStatus').textContent='Anmeldung wird geprüft …';$('createPanel').hidden=true;return}
+ if(!currentUser){$('loadStatus').hidden=false;$('loadStatus').textContent='Du bist nicht angemeldet. Weiterleitung zur Anmeldung …';$('createPanel').hidden=true;return}
+ if(!roleReady){$('loadStatus').hidden=false;$('loadStatus').textContent='Deine Administratorrolle wird geprüft …';$('createPanel').hidden=true;return}
+ if(!allowed){$('loadStatus').hidden=true;$('createPanel').hidden=true;$('accessDenied').hidden=false;return}
+ $('accessDenied').hidden=true;$('loadStatus').hidden=true;$('createPanel').hidden=false;
+ $('createButton').disabled=submitting;
+}
+function setBusy(busy){submitting=busy;$('createButton').disabled=busy||!allowed;$('resetForm').disabled=busy;$('createButton').textContent=busy?'Konto wird angelegt …':'Mitarbeiter anlegen'}
+function cleanupSecondary(){for(const app of secondaryApps){try{app.delete()}catch{}}secondaryApps.clear()}
+function randomPassword(){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%*-_';const values=new Uint32Array(32);crypto.getRandomValues(values);let password='';for(const value of values)password+=alphabet[value%alphabet.length];return password+'aA7!'}
+async function sendResetEmail(email){if(!A||!mainAuth)throw new Error('Firebase Authentication ist noch nicht geladen.');await A.sendPasswordResetEmail(mainAuth,email)}
+async function provisionEmployee(values){
+ const authAtStart=currentUser,session=generation;
+ if(!authAtStart||!allowed||!['admin','superadmin'].includes(currentRole))throw new Error('Dein Konto ist nicht als Administrator freigegeben.');
+ const email=values.email.trim().toLowerCase();
+ const password=randomPassword();
+ const app=await import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js').then(m=>m.initializeApp(firebaseConfig,'employee-create-'+Date.now()+'-'+Math.random().toString(36).slice(2)));
+ secondaryApps.add(app);
+ const secondaryAuth=A.getAuth(app);
+ let createdUser=null;
+ try{
+  const credential=await A.createUserWithEmailAndPassword(secondaryAuth,email,password);
+  createdUser=credential.user;
+  const uid=createdUser.uid;
+  if(session!==generation||currentUser?.uid!==authAtStart.uid||!allowed)throw new Error('Deine Sitzung oder Berechtigung hat sich während des Vorgangs geändert.');
+  const fullName=[values.firstName,values.lastName].filter(Boolean).join(' ');
+  const profile={vorname:values.firstName,nachname:values.lastName,handy:values.phone,telefon:values.phone,benutzername:values.displayName,email,abteilung:values.department,createdAt:Date.now(),createdBy:authAtStart.uid,preferences:{urlaub:false,dokumente:false}};
+  const changes={};
+  changes['users/'+uid]=profile;
+  changes['roles/'+uid]='mitarbeiter';
+  await D.update(D.ref(mainDb),changes);
+  if(session!==generation||currentUser?.uid!==authAtStart.uid)throw new Error('Deine Sitzung hat sich geändert. Das Mitarbeiterkonto wurde angelegt, aber der Abschlussstatus konnte nicht geprüft werden.');
+  let resetSent=true,resetError='';
+  try{await A.sendPasswordResetEmail(secondaryAuth,email)}catch(error){resetSent=false;resetError=friendlyError(error)}
+  return{uid,email,fullName,resetSent,resetError};
+ }catch(error){
+  if(createdUser){
+   try{await A.deleteUser(createdUser)}catch{error.rollbackFailed=true}
+  }
+  throw error;
+ }finally{try{await A.signOut(secondaryAuth)}catch{}try{await app.delete()}catch{}secondaryApps.delete(app)}
+}
+function validateForm(){
+ const firstName=$('firstName').value.trim(),lastName=$('lastName').value.trim(),email=$('newEmployeeEmail').value.trim(),phone=$('phone').value.trim(),displayName=$('displayName').value.trim(),department=$('department').value.trim();
+ if(!firstName||!lastName){showMessage('formStatus','Bitte Vorname und Nachname eingeben.',true);return null}
+ if(!email||!$('newEmployeeEmail').checkValidity()){showMessage('formStatus','Bitte eine gültige E-Mail-Adresse eingeben.',true);return null}
+ return{firstName,lastName,email,phone,displayName,department};
+}
+$('createForm').addEventListener('submit',async event=>{
+ event.preventDefault();clearMessage('formStatus');if(submitting)return;
+ const values=validateForm();if(!values)return;
+ setBusy(true);
+ try{
+  const result=await provisionEmployee(values);
+  createdEmail=result.email;$('createForm').hidden=true;$('createdCard').hidden=false;
+  $('createdHeading').textContent='Mitarbeiterkonto angelegt';
+  $('createdDescription').textContent=result.fullName+' ('+result.email+') wurde mit der Rolle „Mitarbeiter“ angelegt. '+(result.resetSent?'Eine E-Mail zum Festlegen des Passworts wurde versendet.':'Das Konto ist angelegt, aber die Passwort-E-Mail konnte nicht versendet werden: '+result.resetError);
+  $('resendResetEmail').hidden=result.resetSent;
+  if(result.rollbackFailed){showMessage('formStatus','Das Anlegen des Kontos ist fehlgeschlagen und Firebase konnte das neue Authentifizierungskonto nicht automatisch entfernen. Bitte prüfe Firebase Authentication und die Realtime Database. '+friendlyError(new Error()),true);$('formStatus').hidden=false}
+ }catch(error){
+  const extra=error.rollbackFailed?' Das Authentifizierungskonto konnte nach dem Datenbankfehler nicht automatisch entfernt werden. Bitte prüfe Firebase Authentication und die Realtime Database.':'';
+  showMessage('formStatus',friendlyError(error)+extra,true);
+ }finally{setBusy(false)}
+});
+$('resendResetEmail').addEventListener('click',async()=>{
+ if(!createdEmail)return;
+ $('resendResetEmail').disabled=true;clearMessage('resetEmailStatus');
+ try{await sendResetEmail(createdEmail);showMessage('resetEmailStatus','Die Passwort-E-Mail wurde erneut gesendet.');$('resendResetEmail').hidden=true;}
+ catch(error){showMessage('resetEmailStatus',friendlyError(error),true);}
+ finally{$('resendResetEmail').disabled=false;}
+});
+$('createAnother').addEventListener('click',()=>{
+ $('createdCard').hidden=true;$('createForm').hidden=false;$('createForm').reset();$('resendResetEmail').hidden=true;createdEmail='';clearMessage('formStatus');clearMessage('resetEmailStatus');$('firstName').focus();
+});
+$('resetForm').addEventListener('click',()=>clearMessage('formStatus'));
+$('logout').addEventListener('click',async()=>{if(!mainAuth)return;$('logout').disabled=true;try{await A.signOut(mainAuth);window.location.href='../../index.html'}catch{$('logout').disabled=false;showMessage('loadStatus','Die Abmeldung ist fehlgeschlagen. Bitte versuche es erneut.',true)}});
+const logo=$('brandLogo');function fallback(){logo.hidden=true;$('brandFallback').hidden=false}logo.addEventListener('error',fallback);if(logo.complete&&!logo.naturalWidth)fallback();
+async function start(){
+ try{
+  const [appSDK,authSDK,dbSDK]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js')]);
+  A=authSDK;D=dbSDK;mainApp=appSDK.initializeApp(firebaseConfig);mainAuth=A.getAuth(mainApp);mainDb=D.getDatabase(mainApp);
+  A.onAuthStateChanged(mainAuth,account=>{
+   generation++;const thisGeneration=generation;
+   if(roleUnsubscribe){roleUnsubscribe();roleUnsubscribe=null}
+   currentUser=account;currentRole=null;allowed=false;roleReady=false;authReady=true;setAccessState();
+   if(!account){$('topName').textContent='Nicht angemeldet';$('topAvatar').textContent='?';$('topRole').textContent='Weiterleitung';$('logout').disabled=true;window.location.href='../../index.html';return}
+   $('topName').textContent=account.displayName||account.email||'Angemeldet';$('topAvatar').textContent=(account.displayName||account.email||'VE').split(/[\s@._-]+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'VE';$('topRole').textContent='Rolle wird geprüft';$('logout').disabled=false;
+   roleUnsubscribe=D.onValue(D.ref(mainDb,'roles/'+account.uid),snapshot=>{
+    if(thisGeneration!==generation||currentUser?.uid!==account.uid)return;
+    const role=snapshot.val();currentRole=typeof role==='string'?role:null;roleReady=true;allowed=role==='admin'||role==='superadmin';$('topRole').textContent=roleNames[role]||'Keine Administratorrolle';
+    if(!allowed){$('accessDeniedText').textContent='Deine aktuelle Rolle ist nicht zum Anlegen von Mitarbeiterkonten berechtigt. Nur Administratoren und Superadministratoren dürfen diese Funktion verwenden.';}
+    setAccessState();
+   },()=>{
+    if(thisGeneration!==generation)return;currentRole=null;roleReady=true;allowed=false;$('topRole').textContent='Rolle nicht verfügbar';$('accessDeniedText').textContent='Deine Berechtigung konnte nicht aus Firebase geladen werden. Prüfe die Datenbankregeln für deinen eigenen Rolleneintrag. Die Funktion bleibt gesperrt.';setAccessState();
+   });
+  },()=>{authReady=true;roleReady=true;allowed=false;$('loadStatus').textContent='Die Firebase-Anmeldung konnte nicht geprüft werden. Zugriff verweigert.';$('loadStatus').classList.add('error');});
+ }catch(error){$('loadStatus').textContent='Firebase konnte nicht geladen werden. Prüfe deine Internetverbindung und öffne die Seite über deine Website oder einen lokalen Webserver.';$('loadStatus').classList.add('error');$('createPanel').hidden=true;console.error('Firebase initialisierung fehlgeschlagen',error)}
+}
+window.addEventListener('pagehide',cleanupSecondary);
+start();
+</script>
+</body>
+</html>

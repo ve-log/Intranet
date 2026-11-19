@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+<script src="../../assets/js/firebase-config.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VE-Log | Gast registrieren</title>
+
+<link rel="stylesheet" href="../../assets/css/registrieren-gast.css">
+</head>
+
+<body>
+<main class="card">
+    <div class="logo">
+        <img src="../../assets/img/logo.png" alt="VE-Log GmbH">
+    </div>
+
+    <h1>Gastkonto erstellen</h1>
+    <p>
+        Erstelle dein persönliches Gastkonto. Nach erfolgreicher
+        Registrierung wirst du zur Anmeldeseite weitergeleitet.
+    </p>
+
+    <form id="registerForm">
+        <label for="vorname">Vorname</label>
+        <input id="vorname" autocomplete="given-name"
+               maxlength="100" required>
+
+        <label for="nachname">Nachname</label>
+        <input id="nachname" autocomplete="family-name"
+               maxlength="100" required>
+
+        <label for="handy">Telefonnummer (optional)</label>
+        <input id="handy" type="tel" autocomplete="tel"
+               maxlength="40">
+
+        <label for="email">E-Mail-Adresse</label>
+        <input id="email" type="email" autocomplete="email"
+               placeholder="name@beispiel.de" required>
+
+        <label for="password">Passwort (mindestens 12 Zeichen)</label>
+        <input id="password" type="password"
+               autocomplete="new-password" minlength="12" required>
+
+        <label for="passwordRepeat">Passwort wiederholen</label>
+        <input id="passwordRepeat" type="password"
+               autocomplete="new-password" minlength="12" required>
+
+        <button id="submitButton" type="submit">
+            Gastkonto erstellen
+        </button>
+    </form>
+
+    <a class="back" href="../../index.html">Zurück zur Anmeldung</a>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+</main>
+
+<script type="module">
+import { initializeApp } from
+    "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+import { getFunctions, httpsCallable } from
+    "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
+
+const firebaseConfig = window.VELOG_FIREBASE_CONFIG;
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const functions = getFunctions(app, "europe-west1");
+
+const registerGastProfile = httpsCallable(
+    functions, "registerGastProfile"
+);
+
+const form = document.getElementById("registerForm");
+const button = document.getElementById("submitButton");
+const status = document.getElementById("status");
+
+function friendlyError(error) {
+    const messages = {
+        "auth/invalid-email": "Bitte gib eine gültige E-Mail-Adresse ein.",
+        "auth/email-already-in-use": "Diese E-Mail-Adresse ist bereits registriert. Bitte melde dich an.",
+        "auth/weak-password": "Bitte verwende ein stärkeres Passwort mit mindestens 12 Zeichen.",
+        "auth/network-request-failed": "Netzwerkfehler. Bitte prüfe deine Internetverbindung.",
+        "functions/unauthenticated": "Die Anmeldung konnte nicht bestätigt werden. Bitte versuche es erneut.",
+        "functions/already-exists": "Für dieses Konto ist bereits eine Rolle hinterlegt. Bitte kontaktiere den Administrator.",
+        "functions/permission-denied": "Die Registrierung wurde nicht erlaubt. Bitte kontaktiere den Administrator.",
+        "functions/unavailable": "Der Registrierungsdienst ist momentan nicht erreichbar."
+    };
+
+    return messages[error.code] ||
+        "Die Registrierung ist fehlgeschlagen. Bitte prüfe deine Angaben und versuche es erneut.";
+}
+
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const vorname = document.getElementById("vorname").value.trim();
+    const nachname = document.getElementById("nachname").value.trim();
+    const handy = document.getElementById("handy").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const passwordRepeat =
+        document.getElementById("passwordRepeat").value;
+
+    if (!vorname || !nachname) {
+        status.textContent = "Bitte gib deinen Vor- und Nachnamen ein.";
+        return;
+    }
+
+    if (password.length < 12) {
+        status.textContent =
+            "Bitte wähle ein Passwort mit mindestens 12 Zeichen.";
+        return;
+    }
+
+    if (password !== passwordRepeat) {
+        status.textContent = "Die Passwörter stimmen nicht überein.";
+        return;
+    }
+
+    button.disabled = true;
+    status.textContent = "Gastkonto wird erstellt ...";
+
+    try {
+        // Zuerst das Auth-Konto erstellen.
+        const credential = await createUserWithEmailAndPassword(
+            auth, email, password
+        );
+
+        // Rolle und Profil ausschließlich serverseitig vergeben.
+        await registerGastProfile({
+            vorname,
+            nachname,
+            handy
+        });
+
+        // Nicht automatisch angemeldet bleiben.
+        await signOut(auth);
+
+        status.textContent =
+            "Gastkonto erfolgreich erstellt. Du wirst zur Anmeldung weitergeleitet.";
+
+        window.setTimeout(() => {
+            window.location.replace("../../index.html");
+        }, 1200);
+
+    } catch (error) {
+        console.error(error);
+
+        // Wenn das Auth-Konto schon erstellt wurde, aber die
+        // Profilfunktion scheitert, wird es nicht automatisch gelöscht.
+        if (auth.currentUser) {
+            try { await signOut(auth); } catch (signOutError) {
+                console.error(signOutError);
+            }
+        }
+
+        status.textContent = friendlyError(error);
+        button.disabled = false;
+    }
+});
+</script>
+</body>
+</html>

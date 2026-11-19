@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>VE-LOG Urlaubsantrag</title>
+
+<link rel="stylesheet" href="../../assets/css/urlaubformular.css">
+</head>
+
+<body>
+
+<div class="formular" id="formular">
+
+    <!-- =========================
+         KOPF
+    ========================== -->
+
+    <div class="kopf">
+
+        <div class="logo-bereich">
+
+            <img
+                src="../../assets/img/logo.png"
+                alt="VE-LOG Logo"
+                class="logo-img">
+
+            <div class="unternehmensdaten">
+                Flächenmanagement · Umschlag · Transport<br>
+                Sperberweg 15 · 91056 Erlangen<br>
+                Tel. 09131 / 7515-10
+            </div>
+
+        </div>
+
+        <div class="titel-bereich">
+
+            <div class="titel">
+                URLAUBSANTRAG
+            </div>
+
+            <div class="untertitel">
+                VE-LOG GmbH
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="linie"></div>
+
+
+    <!-- =========================
+         MITARBEITER
+    ========================== -->
+
+    <div class="abschnitt">
+
+        <div class="abschnitt-titel">
+            Mitarbeiterdaten
+        </div>
+
+        <div class="form-grid">
+
+            <div class="feld">
+                <label for="name">Nachname</label>
+                <input
+                    type="text"
+                    id="name"
+                    placeholder="Nachname">
+            </div>
+
+            <div class="feld">
+                <label for="vorname">Vorname</label>
+                <input
+                    type="text"
+                    id="vorname"
+                    placeholder="Vorname">
+            </div>
+
+            <div class="feld">
+                <label for="firma">Firma / Abteilung</label>
+                <input
+                    type="text"
+                    id="firma"
+                    placeholder="Firma / Abteilung">
+            </div>
+
+            <div class="feld">
+                <label for="datumAntrag">Datum Antrag</label>
+                <input
+                    type="date"
+                    id="datumAntrag">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         URLAUB
+    ========================== -->
+
+    <div class="abschnitt">
+
+        <div class="abschnitt-titel">
+            Urlaubsantrag
+        </div>
+
+        <div class="form-grid">
+
+            <div class="feld">
+                <label for="urlaubVon">
+                    Urlaub von
+                </label>
+
+                <input
+                    type="date"
+                    id="urlaubVon">
+            </div>
+
+            <div class="feld">
+                <label for="urlaubBis">
+                    Urlaub bis
+                </label>
+
+                <input
+                    type="date"
+                    id="urlaubBis">
+            </div>
+
+            <div class="feld">
+                <label for="urlaubTage">
+                    Anzahl Tage
+                </label>
+
+                <input
+                    type="number"
+                    id="urlaubTage"
+                    min="0"
+                    step="0.5"
+                    placeholder="z. B. 5">
+            </div>
+
+            <div class="feld">
+                <label for="tageText">
+                    Tage
+                </label>
+
+                <input
+                    type="text"
+                    id="tageText"
+                    placeholder="frei editierbar">
+            </div>
+
+            <div class="feld vollbreite">
+
+                <label>
+                    Urlaubsart
+                </label>
+
+                <div class="radio-gruppe">
+
+                    <label class="radio-option">
+                        <input
+                            type="radio"
+                            name="urlaubArt"
+                            value="Erholungsurlaub">
+                        Erholungsurlaub
+                    </label>
+
+                    <label class="radio-option">
+                        <input
+                            type="radio"
+                            name="urlaubArt"
+                            value="Sonderurlaub">
+                        Sonderurlaub
+                    </label>
+
+                    <label class="radio-option">
+                        <input
+                            type="radio"
+                            name="urlaubArt"
+                            value="Unbezahlter Urlaub">
+                        Unbezahlter Urlaub
+                    </label>
+
+                    <label class="radio-option">
+                        <input
+                            type="radio"
+                            name="urlaubArt"
+                            value="Sonstiges">
+                        Sonstiges
+                    </label>
+
+                </div>
+
+            </div>
+
+            <div class="feld vollbreite">
+
+                <label for="vertretung">
+                    Vertretung während des Urlaubs
+                </label>
+
+                <textarea
+                    id="vertretung"
+                    placeholder="Name / Vertretungsregelung"></textarea>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         ANTRAGSTELLER
+    ========================== -->
+
+    <div class="abschnitt">
+
+        <div class="abschnitt-titel">
+            Antragsteller
+        </div>
+
+        <div class="signaturen">
+
+            <!-- UNTERSCHRIFT ANTRAGSTELLER -->
+
+            <div class="signature-box">
+
+                <!-- Beschriftung NUR OBEN -->
+                <div class="signature-title">
+                    UNTERSCHRIFT ANTRAGSTELLER
+                </div>
+
+                <canvas
+                    id="signatureAntragsteller"
+                    class="signature-pad">
+                </canvas>
+
+                <div class="signature-buttons">
+
+                    <button
+                        type="button"
+                        class="btn-clear"
+                        onclick="clearCanvas('signatureAntragsteller')">
+                        🗑 Löschen
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn-upload"
+                        onclick="uploadSignature('signatureAntragsteller')">
+                        📁 Unterschrift hochladen
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn-save-signature"
+                        onclick="saveSignaturePNG('signatureAntragsteller')">
+                        💾 Als PNG speichern
+                    </button>
+
+                </div>
+
+                <input
+                    type="file"
+                    id="upload-signatureAntragsteller"
+                    class="file-input"
+                    accept="image/png,image/jpeg,image/jpg"
+                    onchange="loadSignature(this,'signatureAntragsteller')">
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         URLAUBSGENEHMIGUNG
+    ========================== -->
+
+    <div class="abschnitt">
+
+        <div class="abschnitt-titel">
+            Urlaubsgenehmigung
+        </div>
+
+        <div class="genehmigungs-box">
+
+            <div class="genehmigung-radio">
+
+                <label>
+                    <input
+                        type="radio"
+                        name="genehmigung"
+                        value="Genehmigt">
+                    Genehmigt
+                </label>
+
+                <label>
+                    <input
+                        type="radio"
+                        name="genehmigung"
+                        value="Nicht genehmigt">
+                    Nicht genehmigt
+                </label>
+
+            </div>
+
+            <div class="form-grid">
+
+                <div class="feld">
+
+                    <label for="genehmigungsart">
+                        Genehmigungsart
+                    </label>
+
+                    <input
+                        type="text"
+                        id="genehmigungsart"
+                        placeholder="z. B. vollständig">
+                </div>
+
+                <div class="feld">
+
+                    <label for="genehmigtTage">
+                        Genehmigte Tage
+                    </label>
+
+                    <input
+                        type="number"
+                        id="genehmigtTage"
+                        min="0"
+                        step="0.5"
+                        placeholder="Anzahl">
+                </div>
+
+                <div class="feld vollbreite">
+
+                    <label for="genehmigtTageText">
+                        Genehmigte Tage / Zeitraum
+                    </label>
+
+                    <input
+                        type="text"
+                        id="genehmigtTageText"
+                        placeholder="frei editierbar">
+
+                </div>
+
+                <div class="feld vollbreite">
+
+                    <label for="genehmigungsBemerkung">
+                        Bemerkung
+                    </label>
+
+                    <textarea
+                        id="genehmigungsBemerkung"
+                        placeholder="Bemerkung zur Genehmigung"></textarea>
+
+                </div>
+
+                <div class="feld">
+
+                    <label for="genehmigtVon">
+                        Genehmigt von
+                    </label>
+
+                    <input
+                        type="text"
+                        id="genehmigtVon"
+                        placeholder="Name">
+                </div>
+
+                <div class="feld">
+
+                    <label for="datumLeiter">
+                        Datum
+                    </label>
+
+                    <input
+                        type="date"
+                        id="datumLeiter">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         UNTERSCHRIFT LEITUNG
+    ========================== -->
+
+    <div class="abschnitt">
+
+        <div class="signaturen">
+
+            <div class="signature-box">
+
+                <div class="signature-title">
+                    UNTERSCHRIFT GENEHMIGUNG
+                </div>
+
+                <canvas
+                    id="signatureLeiter"
+                    class="signature-pad">
+                </canvas>
+
+                <div class="signature-buttons">
+
+                    <button
+                        type="button"
+                        class="btn-clear"
+                        onclick="clearCanvas('signatureLeiter')">
+                        🗑 Löschen
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn-upload"
+                        onclick="uploadSignature('signatureLeiter')">
+                        📁 Unterschrift hochladen
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn-save-signature"
+                        onclick="saveSignaturePNG('signatureLeiter')">
+                        💾 Als PNG speichern
+                    </button>
+
+                </div>
+
+                <input
+                    type="file"
+                    id="upload-signatureLeiter"
+                    class="file-input"
+                    accept="image/png,image/jpeg,image/jpg"
+                    onchange="loadSignature(this,'signatureLeiter')">
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         BUTTONS
+    ========================== -->
+
+    <div class="button-bereich">
+
+        <!-- Ziel bei Bedarf an den Dateinamen der Urlaubsseite anpassen. -->
+        <a class="btn-zurueck" href="urlaub.html">
+            ← Zurück zu Urlaub
+        </a>
+
+        <button
+            type="button"
+            class="btn-speichern"
+            onclick="speichernFormular()">
+            💾 Speichern
+        </button>
+
+        <button
+            type="button"
+            class="btn-drucken"
+            onclick="window.print()">
+            🖨 Drucken
+        </button>
+
+        <button
+            type="button"
+            class="btn-pdf"
+            onclick="window.print()">
+            📄 Als PDF speichern
+        </button>
+
+        <button
+            type="button"
+            class="btn-loeschen"
+            onclick="formularLeeren()">
+            🗑 Formular leeren
+        </button>
+
+    </div>
+
+
+    <div class="hinweis">
+        Hinweis: Die eingegebenen Daten werden beim Speichern lokal
+        im Browser gespeichert. Die digitale Unterschrift kann mit
+        Maus, Finger oder Stift erstellt werden.
+    </div>
+
+</div>
+
+
+<script>
+
+/* ==========================================
+   SIGNATUR-FUNKTION
+========================================== */
+
+const pads = {};
+
+
+/* Canvas erstellen */
+
+function createPad(id) {
+
+    const canvas = document.getElementById(id);
+
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+
+    pads[id] = {
+        canvas: canvas,
+        ctx: ctx,
+        drawing: false
+    };
+
+
+    function resizeCanvas() {
+
+        const rect = canvas.getBoundingClientRect();
+
+        const ratio = window.devicePixelRatio || 1;
+
+        const oldImage =
+            canvas.width > 0 && canvas.height > 0
+            ? canvas.toDataURL()
+            : null;
+
+        canvas.width = rect.width * ratio;
+        canvas.height = rect.height * ratio;
+
+        ctx.setTransform(
+            ratio,
+            0,
+            0,
+            ratio,
+            0,
+            0
+        );
+
+        ctx.lineWidth = 2;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = "#000";
+
+        if (oldImage) {
+
+            const img = new Image();
+
+            img.onload = function() {
+
+                ctx.drawImage(
+                    img,
+                    0,
+                    0,
+                    rect.width,
+                    rect.height
+                );
+
+            };
+
+            img.src = oldImage;
+        }
+    }
+
+
+    resizeCanvas();
+
+
+    window.addEventListener(
+        "resize",
+        resizeCanvas
+    );
+
+
+    /* Start */
+
+    canvas.addEventListener(
+        "pointerdown",
+        function(e) {
+
+            e.preventDefault();
+
+            canvas.setPointerCapture(e.pointerId);
+
+            const rect =
+                canvas.getBoundingClientRect();
+
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+
+            pads[id].drawing = true;
+
+        }
+    );
+
+
+    /* Zeichnen */
+
+    canvas.addEventListener(
+        "pointermove",
+        function(e) {
+
+            if (!pads[id].drawing) return;
+
+            e.preventDefault();
+
+            const rect =
+                canvas.getBoundingClientRect();
+
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+        }
+    );
+
+
+    /* Ende */
+
+    canvas.addEventListener(
+        "pointerup",
+        function(e) {
+
+            pads[id].drawing = false;
+
+            try {
+                canvas.releasePointerCapture(e.pointerId);
+            } catch (error) {}
+
+        }
+    );
+
+
+    canvas.addEventListener(
+        "pointercancel",
+        function() {
+
+            pads[id].drawing = false;
+
+        }
+    );
+}
+
+
+/* ==========================================
+   SIGNATUR LÖSCHEN
+========================================== */
+
+function clearCanvas(id) {
+
+    const pad = pads[id];
+
+    if (!pad) return;
+
+    const canvas = pad.canvas;
+    const ctx = pad.ctx;
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+}
+
+
+/* ==========================================
+   ALLE SIGNATUREN LÖSCHEN
+========================================== */
+
+function clearAllSignatures() {
+
+    clearCanvas("signatureAntragsteller");
+    clearCanvas("signatureLeiter");
+
+}
+
+
+/* ==========================================
+   SIGNATUR HOCHLADEN
+========================================== */
+
+function uploadSignature(id) {
+
+    const input =
+        document.getElementById(
+            "upload-" + id
+        );
+
+    if (input) {
+        input.click();
+    }
+
+}
+
+
+/* ==========================================
+   HOCHGELADENE SIGNATUR LADEN
+========================================== */
+
+function loadSignature(input, id) {
+
+    const file = input.files[0];
+
+    if (!file) return;
+
+
+    const reader = new FileReader();
+
+
+    reader.onload = function(e) {
+
+        drawSavedSignature(
+            id,
+            e.target.result
+        );
+
+    };
+
+
+    reader.readAsDataURL(file);
+
+}
+
+
+/* ==========================================
+   SIGNATUR AUF CANVAS ZEICHNEN
+========================================== */
+
+function drawSavedSignature(id, dataUrl) {
+
+    const pad = pads[id];
+
+    if (!pad) return;
+
+    const canvas = pad.canvas;
+    const ctx = pad.ctx;
+
+    const img = new Image();
+
+
+    img.onload = function() {
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        ctx.drawImage(
+            img,
+            0,
+            0,
+            rect.width,
+            rect.height
+        );
+
+    };
+
+
+    img.src = dataUrl;
+
+}
+
+
+/* ==========================================
+   SIGNATUR ALS PNG SPEICHERN
+========================================== */
+
+function saveSignaturePNG(id) {
+
+    const canvas =
+        document.getElementById(id);
+
+    if (!canvas) return;
+
+
+    const link =
+        document.createElement("a");
+
+    link.download =
+        id + "-unterschrift.png";
+
+    link.href =
+        canvas.toDataURL("image/png");
+
+    link.click();
+
+}
+
+
+/* ==========================================
+   SIGNATUR AUSLESEN
+========================================== */
+
+function getSignature(id) {
+
+    const canvas =
+        document.getElementById(id);
+
+    if (!canvas) return "";
+
+    return canvas.toDataURL("image/png");
+
+}
+
+
+/* ==========================================
+   FORMULAR SPEICHERN
+========================================== */
+
+function speichernFormular() {
+
+    const daten = {
+
+        name:
+            document.getElementById("name").value,
+
+        vorname:
+            document.getElementById("vorname").value,
+
+        firma:
+            document.getElementById("firma").value,
+
+        datumAntrag:
+            document.getElementById("datumAntrag").value,
+
+        urlaubVon:
+            document.getElementById("urlaubVon").value,
+
+        urlaubBis:
+            document.getElementById("urlaubBis").value,
+
+        urlaubTage:
+            document.getElementById("urlaubTage").value,
+
+        tageText:
+            document.getElementById("tageText").value,
+
+        urlaubArt:
+            document.querySelector(
+                'input[name="urlaubArt"]:checked'
+            )?.value || "",
+
+        vertretung:
+            document.getElementById("vertretung").value,
+
+        genehmigung:
+            document.querySelector(
+                'input[name="genehmigung"]:checked'
+            )?.value || "",
+
+        genehmigungsart:
+            document.getElementById("genehmigungsart").value,
+
+        genehmigtVon:
+            document.getElementById("genehmigtVon").value,
+
+        genehmigtBis:
+            "",
+
+        genehmigtTage:
+            document.getElementById("genehmigtTage").value,
+
+        genehmigtTageText:
+            document.getElementById("genehmigtTageText").value,
+
+        genehmigungsBemerkung:
+            document.getElementById("genehmigungsBemerkung").value,
+
+        datumLeiter:
+            document.getElementById("datumLeiter").value,
+
+        signaturAntragsteller:
+            getSignature(
+                "signatureAntragsteller"
+            ),
+
+        signaturLeiter:
+            getSignature(
+                "signatureLeiter"
+            ),
+
+        gespeichertAm:
+            new Date().toLocaleString("de-DE")
+
+    };
+
+
+    localStorage.setItem(
+        "urlaubAntrag",
+        JSON.stringify(daten)
+    );
+
+
+    alert(
+        "✅ Urlaubsantrag wurde gespeichert."
+    );
+
+}
+
+
+/* ==========================================
+   FORMULAR LADEN
+========================================== */
+
+function ladeFormular() {
+
+    const gespeichert =
+        localStorage.getItem(
+            "urlaubAntrag"
+        );
+
+    if (!gespeichert) return;
+
+
+    try {
+
+        const daten =
+            JSON.parse(gespeichert);
+
+
+        document.getElementById("name").value =
+            daten.name || "";
+
+        document.getElementById("vorname").value =
+            daten.vorname || "";
+
+        document.getElementById("firma").value =
+            daten.firma || "";
+
+        document.getElementById("datumAntrag").value =
+            daten.datumAntrag || "";
+
+        document.getElementById("urlaubVon").value =
+            daten.urlaubVon || "";
+
+        document.getElementById("urlaubBis").value =
+            daten.urlaubBis || "";
+
+        document.getElementById("urlaubTage").value =
+            daten.urlaubTage || "";
+
+        document.getElementById("tageText").value =
+            daten.tageText || "";
+
+        document.getElementById("vertretung").value =
+            daten.vertretung || "";
+
+        document.getElementById("genehmigungsart").value =
+            daten.genehmigungsart || "";
+
+        document.getElementById("genehmigtVon").value =
+            daten.genehmigtVon || "";
+
+        document.getElementById("genehmigtTage").value =
+            daten.genehmigtTage || "";
+
+        document.getElementById("genehmigtTageText").value =
+            daten.genehmigtTageText || "";
+
+        document.getElementById("genehmigungsBemerkung").value =
+            daten.genehmigungsBemerkung || "";
+
+        document.getElementById("datumLeiter").value =
+            daten.datumLeiter || "";
+
+
+        /* Urlaubstyp */
+
+        if (daten.urlaubArt) {
+
+            const radio =
+                document.querySelector(
+                    `input[name="urlaubArt"][value="${daten.urlaubArt}"]`
+                );
+
+            if (radio) {
+                radio.checked = true;
+            }
+
+        }
+
+
+        /* Genehmigung */
+
+        if (daten.genehmigung) {
+
+            const radio =
+                document.querySelector(
+                    `input[name="genehmigung"][value="${daten.genehmigung}"]`
+                );
+
+            if (radio) {
+                radio.checked = true;
+            }
+
+        }
+
+
+        /* Signaturen */
+
+        if (daten.signaturAntragsteller) {
+
+            drawSavedSignature(
+                "signatureAntragsteller",
+                daten.signaturAntragsteller
+            );
+
+        }
+
+
+        if (daten.signaturLeiter) {
+
+            drawSavedSignature(
+                "signatureLeiter",
+                daten.signaturLeiter
+            );
+
+        }
+
+    } catch (error) {
+
+        console.error(
+            "Fehler beim Laden:",
+            error
+        );
+
+    }
+
+}
+
+
+/* ==========================================
+   FORMULAR LEEREN
+========================================== */
+
+function formularLeeren() {
+
+    const bestaetigung =
+        confirm(
+            "Möchten Sie wirklich alle Eingaben löschen?"
+        );
+
+    if (!bestaetigung) return;
+
+
+    document
+        .getElementById("formular")
+        .querySelectorAll(
+            "input, textarea, select"
+        )
+        .forEach(function(element) {
+
+            if (
+                element.type === "radio" ||
+                element.type === "checkbox"
+            ) {
+
+                element.checked = false;
+
+            } else {
+
+                element.value = "";
+
+            }
+
+        });
+
+
+    clearAllSignatures();
+
+
+    localStorage.removeItem(
+        "urlaubAntrag"
+    );
+
+}
+
+
+/* ==========================================
+   START
+========================================== */
+
+window.addEventListener(
+    "load",
+    function() {
+
+        createPad(
+            "signatureAntragsteller"
+        );
+
+        createPad(
+            "signatureLeiter"
+        );
+
+        ladeFormular();
+
+    }
+);
+
+</script>
+
+</body>
+</html>

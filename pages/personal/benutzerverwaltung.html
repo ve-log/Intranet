@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+<script src="../../assets/js/firebase-config.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benutzerverwaltung · VE-Log</title>
+<link rel="stylesheet" href="../../assets/css/benutzerverwaltung.css">
+</head>
+<body>
+
+<svg class="defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<symbol id="grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+<symbol id="file" viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h6"/></symbol>
+<symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M21 21v-2a6 6 0 0 0-4-5"/></symbol>
+<symbol id="calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18M8 15h2M14 15h2M8 18h2"/></symbol>
+<symbol id="settings" viewBox="0 0 24 24"><path d="m9 3-.6 3-2 .9-2.7-1.1-2 3.4 2.2 2v2l-2.2 2 2 3.4 2.7-1.1 2 .9.6 2.6h6l.6-2.6 2-.9 2.7 1.1 2-3.4-2.2-2v-2l2.2-2-2-3.4-2.7 1.1-2-.9L15 3z"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="logout" viewBox="0 0 24 24"><path d="M9 4H4v16h5M9 12h12M17 8l4 4-4 4"/></symbol>
+</defs>
+</svg>
+
+<a class="skip" href="#main">Zum Inhalt springen</a>
+
+<aside class="sidebar" aria-label="Hauptnavigation">
+  <a class="brand" href="../mitarbeiter/dashboard.html" aria-label="VE-Log Dashboard">
+    <img class="brand-image" id="brandLogo" src="../../assets/img/logo.png" alt="VE-Log">
+    <div>
+      <span class="wordmark" id="brandFallback" hidden>VE-Log</span>
+      <small>MITARBEITERPORTAL</small>
+    </div>
+  </a>
+  <div class="nav-label">ARBEITSPLATZ</div>
+  <nav class="nav">
+    <a href="../mitarbeiter/dashboard.html"><svg class="icon" aria-hidden="true"><use href="#grid"/></svg>Dashboard</a>
+    <a href="personalmanagement.html"><svg class="icon" aria-hidden="true"><use href="#users"/></svg>Mitarbeiter</a>
+    <a href="../formulare/formular.html"><svg class="icon" aria-hidden="true"><use href="#file"/></svg>Formulare</a>
+    <a href="../mitarbeiter/urlaub.html"><svg class="icon" aria-hidden="true"><use href="#calendar"/></svg>Urlaub</a>
+    <a class="active" href="../mitarbeiter/einstellungen.html" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#settings"/></svg>Einstellungen</a>
+  </nav>
+  <div class="side-bottom"><div class="side-note">Alles für deinen Arbeitsalltag.<br>Einfach an einem Ort.</div></div>
+</aside>
+
+<div class="shell">
+<header class="topbar">
+  <div class="breadcrumb"><a href="../mitarbeiter/einstellungen.html">Einstellungen</a> / <strong>Benutzerverwaltung</strong></div>
+  <a class="quiet-button" href="../mitarbeiter/einstellungen.html">← Einstellungen</a>
+</header>
+
+<main id="main">
+<section class="settings-intro">
+  <div>
+    <div class="eyebrow">VE-Log · Administration</div>
+    <h1>Benutzerverwaltung</h1>
+    <p class="muted">Profile, Teamzuordnungen und Benutzerrollen verwalten.</p>
+  </div>
+  <div class="identity-panel">
+    <div class="avatar">VE</div>
+    <div class="identity-copy">
+      <strong id="accountName">Anmeldung wird geprüft …</strong>
+      <span id="accountRole">Rolle wird geladen</span>
+    </div>
+  </div>
+</section>
+
+<div id="pageStatus" class="status-panel" role="status">Deine Anmeldung wird geprüft …</div>
+<p id="loginAction" hidden style="margin-bottom:24px"><a href="../../index.html" class="quiet-button">Zur Anmeldung →</a></p>
+
+<section id="controls" hidden aria-labelledby="listTitle">
+  <div class="section-head">
+    <h2 id="listTitle">Gespeicherte Benutzerprofile <span id="userCount" class="section-count"></span></h2>
+  </div>
+  <div class="people-toolbar">
+    <div class="search">
+      <label for="userSearch" style="margin:0">Suche</label>
+      <input id="userSearch" type="search" placeholder="Name, E-Mail, Team oder Konto-ID">
+    </div>
+    <div>
+      <label for="roleFilter">Rolle filtern</label>
+      <select id="roleFilter" class="role-filter">
+        <option value="">Alle Rollen</option>
+        <option value="gast">Gast</option>
+        <option value="mitarbeiter">Mitarbeiter</option>
+        <option value="manager">Manager</option>
+        <option value="admin">Administrator</option>
+        <option value="superadmin">Superadministrator</option>
+        <option value="missing">Keine gültige Rolle</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="tableWrap" class="table-wrap" hidden>
+    <table>
+      <caption style="text-align:left;padding:12px 18px">Benutzerprofile in der Realtime Database</caption>
+      <thead>
+        <tr>
+          <th scope="col">Name</th>
+          <th scope="col">E-Mail im Profil</th>
+          <th scope="col">Rolle</th>
+          <th scope="col">Team</th>
+          <th scope="col">Aktion</th>
+        </tr>
+      </thead>
+      <tbody id="userRows"></tbody>
+    </table>
+  </div>
+
+  <p id="emptyList" class="empty" hidden></p>
+  <div class="pagination">
+    <span id="resultCount" aria-live="polite">0 Ergebnisse</span>
+    <div>
+      <button id="previousPage" type="button" class="quiet-button">← Zurück</button>
+      <button id="nextPage" type="button" class="quiet-button">Weiter →</button>
+    </div>
+  </div>
+  <p class="settings-footnote">
+    Diese Liste zeigt Profile unter users/&lt;Konto-ID&gt;. Das Löschen entfernt das Datenbankprofil und den zugehörigen Rollen-Eintrag, aber nicht das Konto in Firebase Authentication.
+  </p>
+</section>
+
+<footer class="bottom">
+  <span>VE-Log · Mitarbeiterportal</span>
+  <a href="../mitarbeiter/einstellungen.html">← Zurück zu den Einstellungen</a>
+</footer>
+</main>
+</div>
+
+<dialog id="editor" class="dialog" aria-labelledby="editorTitle">
+  <div class="dialog-head">
+    <h2 id="editorTitle">Profil bearbeiten</h2>
+    <button id="closeEditor" type="button" class="quiet-button" aria-label="Bearbeitung schließen">×</button>
+  </div>
+  <p id="editUid" class="edit-note"></p>
+  <div id="editStatus" class="status-panel" role="status" hidden></div>
+  <form id="editForm">
+    <fieldset id="editFields">
+      <legend style="position:absolute;width:1px;height:1px;overflow:hidden">Benutzerprofil bearbeiten</legend>
+      <div class="edit-grid">
+        <div><label for="edit_vorname">Vorname</label><input id="edit_vorname" type="text" maxlength="200" required></div>
+        <div><label for="edit_nachname">Nachname</label><input id="edit_nachname" type="text" maxlength="200" required></div>
+        <div><label for="edit_email">E-Mail im Profil</label><input id="edit_email" type="email" maxlength="200"></div>
+        <div><label for="edit_handy">Telefon</label><input id="edit_handy" type="tel" maxlength="200"></div>
+        <div><label for="edit_teamId">Team-ID</label><input id="edit_teamId" type="text" maxlength="100"></div>
+        <div><label for="edit_abteilung">Abteilung</label><input id="edit_abteilung" type="text" maxlength="200"></div>
+        <div><label for="edit_personalnummer">Personalnummer</label><input id="edit_personalnummer" type="text" maxlength="200"></div>
+        <div>
+          <label for="edit_aktiv">Beschäftigungsstatus</label>
+          <select id="edit_aktiv">
+            <option value="">Nicht hinterlegt</option>
+            <option value="true">Aktiv</option>
+            <option value="false">Inaktiv</option>
+          </select>
+        </div>
+        <div>
+          <label for="edit_role">Benutzerrolle</label>
+          <select id="edit_role">
+            <option value="">Keine gültige Rolle</option>
+            <option value="gast">Gast</option>
+            <option value="mitarbeiter">Mitarbeiter</option>
+            <option value="manager">Manager</option>
+            <option value="admin">Administrator</option>
+            <option value="superadmin">Superadministrator</option>
+          </select>
+        </div>
+      </div>
+      <p id="roleHelp" class="edit-note"></p>
+      <p class="edit-note">Die E-Mail hier gehört zum Datenbankprofil. Änderungen daran ändern nicht die Anmeldedaten in Firebase Authentication.</p>
+    </fieldset>
+    <button id="saveButton" class="submit" type="submit">Änderungen speichern</button>
+  </form>
+</dialog>
+
+<noscript><p class="status-panel error">Bitte aktiviere JavaScript, um die Benutzerverwaltung zu verwenden.</p></noscript>
+
+<script type="module">
+'use strict';
+
+const firebaseConfig = window.VELOG_FIREBASE_CONFIG;
+
+const $ = id => document.getElementById(id);
+const roleNames = {
+  gast: 'Gast',
+  mitarbeiter: 'Mitarbeiter',
+  manager: 'Manager',
+  admin: 'Administrator',
+  superadmin: 'Superadministrator'
+};
+
+let auth, db, D, currentUser = null, ownRole = null;
+let profiles = {}, userRoles = new Map(), roleSubscriptions = new Map();
+let stopOwnRole = null, stopProfiles = null, generation = 0;
+let loaded = false, page = 0, editingUid = null, saving = false;
+
+const pageSize = 20;
+const clean = value => typeof value === 'string' ? value.trim() : '';
+const canManage = () => ['admin', 'superadmin'].includes(ownRole);
+const isSuperadmin = () => ownRole === 'superadmin';
+const validRole = value => typeof value === 'string' && Object.hasOwn(roleNames, value);
+
+function status(message, error = false) {
+  $('pageStatus').textContent = message;
+  $('pageStatus').classList.toggle('error', error);
+  $('pageStatus').hidden = !message;
+}
+
+function editStatus(message, error = false) {
+  $('editStatus').textContent = message;
+  $('editStatus').classList.toggle('error', error);
+  $('editStatus').hidden = !message;
+}
+
+function nameOf(uid) {
+  const profile = profiles[uid] || {};
+  return [clean(profile.vorname), clean(profile.nachname)].filter(Boolean).join(' ')
+    || clean(profile.email)
+    || uid;
+}
+
+function closeEditor() {
+  if (saving) return;
+  if ($('editor').open) $('editor').close();
+  editingUid = null;
+}
+
+function stopList() {
+  if (stopProfiles) stopProfiles();
+  stopProfiles = null;
+
+  for (const stop of roleSubscriptions.values()) stop();
+
+  roleSubscriptions.clear();
+  userRoles.clear();
+  profiles = {};
+  loaded = false;
+  page = 0;
+
+  closeEditor();
+  render();
+}
+
+function syncRoleSubscriptions(session) {
+  for (const [uid, stop] of roleSubscriptions) {
+    if (!Object.hasOwn(profiles, uid)) {
+      stop();
+      roleSubscriptions.delete(uid);
+      userRoles.delete(uid);
+    }
+  }
+
+  for (const uid of Object.keys(profiles)) {
+    if (roleSubscriptions.has(uid)) continue;
+
+    userRoles.set(uid, {state: 'loading', value: null});
+
+    // Rollen werden einzeln gelesen: roles/<uid>.
+    const stop = D.onValue(
+      D.ref(db, `roles/${uid}`),
+      snapshot => {
+        if (session !== generation || !canManage() || !Object.hasOwn(profiles, uid)) return;
+
+        const value = snapshot.val();
+        userRoles.set(uid, {
+          state: validRole(value) ? 'ready' : 'missing',
+          value: validRole(value) ? value : null
+        });
+
+        render();
+      },
+      () => {
+        if (session !== generation || !Object.hasOwn(profiles, uid)) return;
+        userRoles.set(uid, {state: 'error', value: null});
+        render();
+      }
+    );
+
+    roleSubscriptions.set(uid, stop);
+  }
+}
+
+function roleText(uid) {
+  const info = userRoles.get(uid);
+
+  if (!info || info.state === 'loading') return 'Wird geladen …';
+  if (info.state === 'error') return 'Nicht lesbar';
+
+  return roleNames[info.value] || 'Nicht hinterlegt';
+}
+
+function render() {
+  const query = $('userSearch').value.trim().toLocaleLowerCase('de-DE');
+  const selectedRole = $('roleFilter').value;
+
+  const ids = canManage()
+    ? Object.keys(profiles).filter(uid => {
+        const p = profiles[uid];
+        const roleInfo = userRoles.get(uid);
+        const role = roleInfo?.value;
+
+        const matchesRole = !selectedRole ||
+          (selectedRole === 'missing'
+            ? roleInfo?.state === 'missing'
+            : role === selectedRole);
+
+        const searchable = [
+          nameOf(uid),
+          p.email,
+          p.teamId,
+          p.personalnummer,
+          uid
+        ].map(clean).join(' ').toLocaleLowerCase('de-DE');
+
+        return matchesRole && searchable.includes(query);
+      }).sort((a, b) => nameOf(a).localeCompare(nameOf(b), 'de'))
+    : [];
+
+  const pages = Math.max(1, Math.ceil(ids.length / pageSize));
+  page = Math.max(0, Math.min(page, pages - 1));
+
+  $('userCount').textContent = loaded
+    ? Object.keys(profiles).length + ' Profile'
+    : 'Noch nicht geladen';
+
+  $('resultCount').textContent = ids.length + ' Ergebnisse' +
+    (ids.length ? ` · Seite ${page + 1} von ${pages}` : '');
+
+  $('userRows').replaceChildren();
+
+  for (const uid of ids.slice(page * pageSize, (page + 1) * pageSize)) {
+    const p = profiles[uid];
+    const row = document.createElement('tr');
+
+    for (const content of [
+      nameOf(uid),
+      clean(p.email) || 'Nicht hinterlegt',
+      roleText(uid),
+      clean(p.teamId) || 'Nicht zugeordnet'
+    ]) {
+      const cell = document.createElement('td');
+      cell.textContent = content;
+      row.append(cell);
+    }
+
+    const cell = document.createElement('td');
+
+    const editButton = document.createElement('button');
+    editButton.type = 'button';
+    editButton.className = 'quiet-button';
+    editButton.textContent = 'Bearbeiten';
+    editButton.disabled = saving;
+    editButton.setAttribute('aria-label', `Profil bearbeiten: ${nameOf(uid)}`);
+    editButton.addEventListener('click', () => openEditor(uid));
+    cell.append(editButton);
+
+    // Nur Superadmins bekommen die Löschaktion angezeigt.
+    if (isSuperadmin()) {
+      const deleteButton = document.createElement('button');
+      deleteButton.type = 'button';
+      deleteButton.className = 'quiet-button';
+      deleteButton.style.marginLeft = '6px';
+      deleteButton.textContent = 'Löschen';
+      deleteButton.disabled = saving || uid === currentUser?.uid;
+      deleteButton.setAttribute('aria-label', `Benutzerprofil löschen: ${nameOf(uid)}`);
+      deleteButton.title = uid === currentUser?.uid
+        ? 'Das eigene Konto kann hier nicht gelöscht werden.'
+        : 'Datenbankprofil und Rollen-Eintrag löschen';
+
+      deleteButton.addEventListener('click', () => deleteEmployee(uid));
+      cell.append(deleteButton);
+    }
+
+    row.append(cell);
+    $('userRows').append(row);
+  }
+
+  $('tableWrap').hidden = !loaded || !ids.length;
+  $('emptyList').hidden = !loaded || ids.length > 0;
+
+  $('emptyList').textContent = Object.keys(profiles).length
+    ? 'Keine Profile für diese Suche oder diesen Filter gefunden.'
+    : 'Keine Profile unter users gefunden. Ein Konto in Firebase Authentication benötigt zusätzlich ein Datenbankprofil, um hier zu erscheinen.';
+
+  $('previousPage').disabled = page === 0;
+  $('nextPage').disabled = page >= pages - 1;
+}
+
+function openEditor(uid) {
+  if (!canManage() || !Object.hasOwn(profiles, uid) || saving) return;
+
+  editingUid = uid;
+  const p = profiles[uid];
+
+  $('editorTitle').textContent = 'Profil bearbeiten';
+  $('editUid').textContent = 'Konto-ID: ' + uid;
+
+  for (const key of [
+    'vorname', 'nachname', 'email', 'handy',
+    'teamId', 'abteilung', 'personalnummer'
+  ]) {
+    $('edit_' + key).value = clean(p[key]);
+  }
+
+  $('edit_aktiv').value = p.aktiv === true
+    ? 'true'
+    : p.aktiv === false
+      ? 'false'
+      : '';
+
+  $('edit_role').value = userRoles.get(uid)?.value || '';
+  $('edit_role').disabled = !isSuperadmin()
+    || userRoles.get(uid)?.state === 'loading'
+    || userRoles.get(uid)?.state === 'error';
+
+  $('roleHelp').textContent = isSuperadmin()
+    ? 'Rollenänderungen werden in roles/<Konto-ID> gespeichert.'
+    : 'Nur ein Superadmin darf Rollen ändern.';
+
+  editStatus('');
+  $('editFields').disabled = false;
+  $('saveButton').disabled = false;
+  $('closeEditor').disabled = false;
+  $('editor').showModal();
+}
+
+/*
+ * Löschfunktion:
+ * - ausschließlich Superadmins
+ * - eigene UID ist ausgeschlossen
+ * - Rolle des ausführenden Benutzers wird vor dem Löschen erneut gelesen
+ * - Zielrolle wird frisch aus der Datenbank gelesen
+ * - Superadmin-Ziele werden geschützt
+ * - users/<uid> und roles/<uid> werden atomar gelöscht
+ *
+ * Hinweis: Das Firebase-Authentication-Konto bleibt bestehen.
+ */
+async function deleteEmployee(uid) {
+  if (!isSuperadmin() || !currentUser || saving) {
+    status('Nur Superadmins dürfen Benutzerprofile löschen.', true);
+    return;
+  }
+
+  if (!uid || uid === currentUser.uid) {
+    status('Das eigene Konto kann hier nicht gelöscht werden.', true);
+    return;
+  }
+
+  if (!Object.hasOwn(profiles, uid)) {
+    status('Das ausgewählte Benutzerprofil wurde nicht gefunden oder bereits entfernt.', true);
+    return;
+  }
+
+  const session = generation;
+  const employeeName = nameOf(uid);
+
+  // Rolle des angemeldeten Benutzers unmittelbar vor der Aktion erneut prüfen.
+  saving = true;
+  render();
+  status('Berechtigung und Benutzerrolle werden erneut geprüft …');
+
+  try {
+    const ownRoleSnapshot = await D.get(D.ref(db, `roles/${currentUser.uid}`));
+
+    if (session !== generation || !currentUser) return;
+
+    const freshOwnRole = ownRoleSnapshot.val();
+
+    if (freshOwnRole !== 'superadmin' || !isSuperadmin()) {
+      ownRole = validRole(freshOwnRole) ? freshOwnRole : null;
+      status('Löschen verweigert: Dein Superadmin-Zugriff ist nicht mehr gültig.', true);
+      return;
+    }
+
+    // Die Zielrolle ebenfalls direkt vor dem Löschen neu abrufen.
+    const targetRoleSnapshot = await D.get(D.ref(db, `roles/${uid}`));
+
+    if (session !== generation) return;
+
+    const targetRole = targetRoleSnapshot.val();
+
+    if (targetRole === 'superadmin') {
+      status('Superadmin-Profile können über diese Benutzerverwaltung nicht gelöscht werden.', true);
+      return;
+    }
+
+    // Noch einmal prüfen, dass das Zielprofil existiert.
+    const targetProfileSnapshot = await D.get(D.ref(db, `users/${uid}`));
+
+    if (session !== generation) return;
+
+    if (!targetProfileSnapshot.exists()) {
+      status('Das Benutzerprofil existiert nicht mehr. Aktualisiere die Seite.', true);
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Benutzerprofil wirklich löschen?\n\n` +
+      `${employeeName}\n\n` +
+      `Das Datenbankprofil unter users/${uid} und der Rollen-Eintrag ` +
+      `unter roles/${uid} werden gelöscht.\n\n` +
+      `Das Firebase-Authentication-Konto und dessen Anmeldedaten werden NICHT gelöscht.\n\n` +
+      `Diese Datenbankänderung kann nicht automatisch rückgängig gemacht werden. Fortfahren?`
+    );
+
+    if (!confirmed) {
+      status('Löschen abgebrochen.');
+      return;
+    }
+
+    // Berechtigung direkt vor dem Schreibvorgang nochmals kontrollieren.
+    const finalRoleSnapshot = await D.get(D.ref(db, `roles/${currentUser.uid}`));
+
+    if (session !== generation || !currentUser) return;
+
+    if (finalRoleSnapshot.val() !== 'superadmin' || !isSuperadmin()) {
+      status('Löschen verweigert: Die Superadmin-Berechtigung konnte nicht bestätigt werden.', true);
+      return;
+    }
+
+    status(`Datenbankprofil von ${employeeName} wird gelöscht …`);
+
+    // Atomarer Mehrpfad-Update: Beide Datenbankeinträge werden zusammen entfernt.
+    const updates = {};
+    updates[`users/${uid}`] = null;
+    updates[`roles/${uid}`] = null;
+
+    await D.update(D.ref(db), updates);
+
+    if (session === generation) {
+      status(
+        `Das Datenbankprofil von ${employeeName} und der zugehörige Rollen-Eintrag wurden gelöscht. ` +
+        `Das Firebase-Authentication-Konto besteht weiterhin.`
+      );
+    }
+  } catch (error) {
+    console.error('Benutzerprofil löschen:', error);
+
+    const code = String(error?.code || '').toLowerCase();
+
+    let message =
+      'Das Benutzerprofil konnte nicht gelöscht werden. Prüfe die Verbindung und deine Firebase Security Rules.';
+
+    if (code.includes('permission-denied')) {
+      message =
+        'Firebase hat das Löschen verweigert. Prüfe deine Superadmin-Rolle und die veröffentlichten Realtime-Database-Regeln.';
+    } else if (code.includes('unauthenticated')) {
+      message = 'Deine Anmeldung ist abgelaufen. Bitte melde dich erneut an.';
+    } else if (code.includes('network')) {
+      message = 'Netzwerkfehler. Prüfe deine Internetverbindung und versuche es erneut.';
+    }
+
+    if (session === generation) status(message, true);
+  } finally {
+    saving = false;
+
+    if (session === generation) render();
+  }
+}
+
+async function saveProfile(event) {
+  event.preventDefault();
+
+  if (!canManage() || !currentUser || !editingUid || saving ||
+      !Object.hasOwn(profiles, editingUid)) {
+    return;
+  }
+
+  const uid = editingUid;
+  const session = generation;
+  const patch = {};
+
+  for (const key of [
+    'vorname', 'nachname', 'email', 'handy',
+    'teamId', 'abteilung', 'personalnummer'
+  ]) {
+    patch[key] = $('edit_' + key).value.trim();
+  }
+
+  if (!patch.vorname || !patch.nachname) {
+    editStatus('Bitte gib Vorname und Nachname ein.', true);
+    return;
+  }
+
+  if (patch.teamId.length > 100) {
+    editStatus('Die Team-ID darf maximal 100 Zeichen enthalten.', true);
+    return;
+  }
+
+  patch.teamId = patch.teamId || null;
+  patch.aktiv = $('edit_aktiv').value === ''
+    ? null
+    : $('edit_aktiv').value === 'true';
+
+  const desiredRole = $('edit_role').value;
+  const oldRole = userRoles.get(uid)?.value;
+
+  const changeRole = isSuperadmin()
+    && !$('edit_role').disabled
+    && validRole(desiredRole)
+    && desiredRole !== oldRole;
+
+  if (changeRole && uid === currentUser.uid && desiredRole !== 'superadmin') {
+    editStatus(
+      'Die eigene Superadmin-Rolle kann auf dieser Seite nicht herabgestuft werden. Bitte verwende dafür ein anderes Superadmin-Konto.',
+      true
+    );
+    return;
+  }
+
+  const updates = {};
+
+  for (const [key, value] of Object.entries(patch)) {
+    updates[`users/${uid}/${key}`] = value;
+  }
+
+  if (changeRole) {
+    updates[`roles/${uid}`] = desiredRole;
+  }
+
+  saving = true;
+  $('editFields').disabled = true;
+  $('saveButton').disabled = true;
+  $('closeEditor').disabled = true;
+
+  editStatus('Änderungen werden gespeichert …');
+  render();
+
+  try {
+    await D.update(D.ref(db), updates);
+
+    if (session === generation && canManage()) {
+      status('Profil' + (changeRole ? ' und Rolle' : '') + ' wurden gespeichert.');
+      saving = false;
+      closeEditor();
+    }
+  } catch (error) {
+    if (session === generation) {
+      editStatus(
+        String(error.code || '').toLowerCase().includes('permission')
+          ? 'Speichern verweigert. Prüfe deine aktuelle Rolle und die veröffentlichten Firebase-Regeln.'
+          : 'Die Änderungen konnten nicht gespeichert werden. Prüfe die Verbindung und versuche es erneut.',
+        true
+      );
+    }
+  } finally {
+    saving = false;
+
+    if (session === generation && canManage() && Object.hasOwn(profiles, uid)) {
+      $('editFields').disabled = false;
+      $('saveButton').disabled = false;
+      $('closeEditor').disabled = false;
+
+      $('edit_role').disabled = !isSuperadmin()
+        || !['ready', 'missing'].includes(userRoles.get(uid)?.state);
+    } else if ($('editor').open) {
+      closeEditor();
+    }
+
+    render();
+  }
+}
+
+function applyAccess(session) {
+  $('accountRole').textContent = roleNames[ownRole] || 'Keine gültige Rolle';
+  $('controls').hidden = !canManage();
+
+  if (!canManage()) {
+    stopList();
+    status('Die Benutzerverwaltung ist nur für Administratoren und Superadministratoren freigegeben.', true);
+    return;
+  }
+
+  if (stopProfiles) {
+    render();
+    return;
+  }
+
+  status('Benutzerprofile werden geladen …');
+
+  stopProfiles = D.onValue(
+    D.ref(db, 'users'),
+    snapshot => {
+      if (session !== generation || !canManage()) return;
+
+      const next = {};
+
+      snapshot.forEach(child => {
+        const value = child.val();
+
+        if (value && typeof value === 'object' && !Array.isArray(value)) {
+          next[child.key] = value;
+        }
+      });
+
+      profiles = next;
+      loaded = true;
+
+      if (editingUid && !Object.hasOwn(profiles, editingUid)) {
+        closeEditor();
+      }
+
+      syncRoleSubscriptions(session);
+      render();
+      status('');
+    },
+    error => {
+      if (session !== generation) return;
+
+      stopList();
+
+      status(
+        String(error.code || '').toLowerCase().includes('permission')
+          ? 'Der Zugriff auf users wurde verweigert. Prüfe, ob roles/<deine Konto-ID> admin oder superadmin enthält und die Regeln veröffentlicht sind.'
+          : 'Die Profile konnten nicht geladen werden. Prüfe deine Verbindung.',
+        true
+      );
+    }
+  );
+}
+
+async function start() {
+  try {
+    // Firebase Functions wird nicht mehr benötigt.
+    const [appSDK, A, databaseSDK] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js'),
+      import('https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js')
+    ]);
+
+    D = databaseSDK;
+
+    const app = appSDK.initializeApp(firebaseConfig);
+    auth = A.getAuth(app);
+    db = D.getDatabase(app);
+
+    A.onAuthStateChanged(auth, user => {
+      generation++;
+      const session = generation;
+
+      if (stopOwnRole) stopOwnRole();
+      stopOwnRole = null;
+
+      ownRole = null;
+      currentUser = user;
+
+      stopList();
+      $('controls').hidden = true;
+      $('accountRole').textContent = 'Rolle wird geprüft';
+      $('loginAction').hidden = !!user;
+
+      if (!user) {
+        $('accountName').textContent = 'Nicht angemeldet';
+        $('accountRole').textContent = 'Gast';
+        status('Keine aktive Firebase-Anmeldung erkannt. Bitte melde dich über die Anmeldeseite an.');
+        return;
+      }
+
+      $('accountName').textContent = user.email || 'Benutzer';
+      status('Deine Rolle wird geprüft …');
+
+      stopOwnRole = D.onValue(
+        D.ref(db, `roles/${user.uid}`),
+        snapshot => {
+          if (session !== generation) return;
+
+          const value = snapshot.val();
+          ownRole = validRole(value) ? value : null;
+
+          applyAccess(session);
+
+          if ($('editor').open) {
+            $('edit_role').disabled = !isSuperadmin()
+              || saving
+              || !['ready', 'missing'].includes(userRoles.get(editingUid)?.state);
+          }
+        },
+        () => {
+          if (session !== generation) return;
+
+          ownRole = null;
+          stopList();
+          $('controls').hidden = true;
+          status('Deine Rolle konnte nicht gelesen werden. Prüfe die Firebase-Regeln.', true);
+        }
+      );
+    }, () => {
+      generation++;
+      currentUser = null;
+      ownRole = null;
+      stopList();
+      $('controls').hidden = true;
+      status('Deine Anmeldung konnte nicht geprüft werden. Bitte lade die Seite erneut.', true);
+    });
+  } catch (error) {
+    status(
+      'Firebase konnte nicht gestartet werden. Prüfe die Verbindung und öffne diese Datei über dieselbe Website wie deine Anmeldeseite.',
+      true
+    );
+    console.error('Benutzerverwaltung', error);
+  }
+}
+
+$('userSearch').addEventListener('input', () => {
+  page = 0;
+  render();
+});
+
+$('roleFilter').addEventListener('change', () => {
+  page = 0;
+  render();
+});
+
+$('previousPage').addEventListener('click', () => {
+  page--;
+  render();
+});
+
+$('nextPage').addEventListener('click', () => {
+  page++;
+  render();
+});
+
+$('closeEditor').addEventListener('click', closeEditor);
+
+$('editor').addEventListener('cancel', event => {
+  if (saving) {
+    event.preventDefault();
+  } else {
+    editingUid = null;
+  }
+});
+
+$('editForm').addEventListener('submit', saveProfile);
+
+const logo = $('brandLogo');
+
+function fallback() {
+  logo.hidden = true;
+  $('brandFallback').hidden = false;
+}
+
+logo.addEventListener('error', fallback);
+
+if (logo.complete && !logo.naturalWidth) {
+  fallback();
+}
+
+render();
+start();
+</script>
+</body>
+</html>
