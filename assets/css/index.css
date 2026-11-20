@@ -23,3 +23,9 @@ button:disabled{opacity:.6;cursor:not-allowed}
 .status{margin:16px 0 0;overflow-wrap:anywhere;font-size:13px;line-height:1.5}
 .status:empty{display:none}.status.error{color:#b42318}.status.success{color:#067647}
 @media(max-width:420px){.login-box{padding:25px 21px}h1{font-size:24px}}
+
+.ms-btn{margin-top:10px;background:#fff;color:#263238;border:1px solid #8c8c8c;display:flex;align-items:center;justify-content:center;gap:10px}
+.ms-btn:hover{background:#f3f3f3}
+.ms-btn svg{width:18px;height:18px;flex:none}
+.or{display:flex;align-items:center;gap:10px;margin:16px 0 6px;color:#667085;font-size:12px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:#e5e7eb}
