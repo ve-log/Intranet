@@ -51,3 +51,9 @@ Diese Seiten werden verlinkt, existieren aber noch nicht (führen zur 404-Seite)
 - Personalübersicht: Mitarbeiter und Manager sehen die Seite nicht mehr (zusätzliche Prüfung in der Seite selbst).
 - Einstellungen: Sicherheit, Backup & Daten und Systemprotokolle auch für Admin sichtbar (vorher nur Superadmin).
 - Noch nicht vorhandene Seiten (unternehmensdaten, urlaubverwaltung, sicherheit, protokolle, backup, datenexport) beim Erstellen mit `data-require="admin"` einbinden.
+
+## Mitarbeiterbereich: Arbeitszeiten, Krankmeldung, Schulungen
+- Neu: `pages/mitarbeiter/krankmeldung.html` (eigene Krankmeldung abgeben, eigene Meldungen sehen) und `pages/mitarbeiter/schulungen.html` (eigene Schulungen und Ablaufdaten, nur lesen).
+- Alle Konten außer Gast haben Zugriff (mitarbeiter, manager, admin, superadmin). Gäste sehen nur „Kein Zugriff“.
+- Arbeitszeiten = bestehende Zeiterfassung, jetzt in allen Mitarbeiter-Menüs und im Dashboard verlinkt.
+- Neue Firebase-Regeln für `hrManagement` (siehe `docs/firebase-database-rules.json`): Mitarbeiter lesen nur eigene Einträge, dürfen nur eigene Krankmeldungen mit Status „Gemeldet“ anlegen. Bearbeiten und Löschen sowie alle Schulungen nur Admin/Superadmin.
