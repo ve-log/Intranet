@@ -44,3 +44,10 @@ Diese Seiten werden verlinkt, existieren aber noch nicht (führen zur 404-Seite)
 - Mitarbeiter-Registrierung nur mit @ve-log.de (Browser-Prüfung + Firebase-Rules, siehe `docs/firebase-database-rules.json`).
 - `MS_TENANT_ID` in `index.html` und `pages/auth/registrieren.html` mit der Azure-Verzeichnis-ID füllen.
 - Azure-Umleitungs-URI: https://ve-log.firebaseapp.com/__/auth/handler
+
+## Zugriffsschutz Verwaltungsbereiche (nur Admin und Superadmin)
+- Neu: `assets/js/access.js` blendet Links zu Personalmanagement, Personalübersicht, Mitarbeiter anlegen, Urlaubsverwaltung, Benutzerverwaltung, Unternehmensdaten, Sicherheit, Systemprotokolle, Backup und Datenexport für alle außer Admin/Superadmin aus.
+- Mit `data-require="admin"` sperrt das Skript die ganze Seite (eingebunden in Personalübersicht, Mitarbeiter anlegen, Benutzerverwaltung, Personalmanagement).
+- Personalübersicht: Mitarbeiter und Manager sehen die Seite nicht mehr (zusätzliche Prüfung in der Seite selbst).
+- Einstellungen: Sicherheit, Backup & Daten und Systemprotokolle auch für Admin sichtbar (vorher nur Superadmin).
+- Noch nicht vorhandene Seiten (unternehmensdaten, urlaubverwaltung, sicherheit, protokolle, backup, datenexport) beim Erstellen mit `data-require="admin"` einbinden.
