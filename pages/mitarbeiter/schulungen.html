@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+<script src="../../assets/js/firebase-config.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VE-Log | Schulungen</title>
+<link rel="stylesheet" href="../../assets/css/mitarbeiter-hr.css">
+</head>
+<body>
+<div class="gate" id="gate"><p>Berechtigung wird geprüft …</p></div>
+<div id="app" hidden>
+<header class="topbar"><a href="dashboard.html"><img src="../../assets/img/logo.png" alt="VE-Log"></a><span class="who" id="who"></span></header>
+<nav class="tabs" aria-label="Mitarbeiterbereich">
+<a href="dashboard.html">Dashboard</a>
+<a href="zeiterfassung.html">Arbeitszeiten</a>
+<a href="urlaub.html">Urlaub</a>
+<a href="krankmeldung.html">Krankmeldung</a>
+<a href="schulungen.html" class="active" aria-current="page">Schulungen</a>
+</nav>
+<main>
+<h1>Meine Schulungen</h1>
+<p class="lead">Hier siehst du deine Schulungen, Qualifikationen und wann sie ablaufen. Eintragen und ändern kann die Verwaltung.</p>
+<section class="card">
+<h2>Übersicht</h2>
+<div class="list" id="list"></div>
+<div class="empty" id="empty" hidden>Für dich sind noch keine Schulungen eingetragen.</div>
+<p class="status" id="status" role="status" aria-live="polite"></p>
+</section>
+</main>
+</div>
+<script type="module">
+import {start, ref, query, orderByChild, equalTo, onValue, niceDate} from "../../assets/js/mitarbeiter-hr.js";
+const $ = id => document.getElementById(id);
+
+start(({db, user}) => {
+  const listRef = query(ref(db, "hrManagement/trainings"), orderByChild("employeeUid"), equalTo(user.uid));
+  onValue(listRef, snap => {
+    const items = [];
+    snap.forEach(child => { const v = child.val(); if (v && typeof v === "object") items.push(v); });
+    items.sort((a, b) => String(a.expiryDate || "9999").localeCompare(String(b.expiryDate || "9999")));
+    const host = $("list"); host.replaceChildren();
+    $("empty").hidden = items.length > 0;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    for (const t of items) {
+      const box = document.createElement("div"); box.className = "item";
+      const top = document.createElement("div"); top.className = "item-top";
+      const h = document.createElement("h3"); h.textContent = t.title || "Schulung";
+      const badge = document.createElement("span"); badge.className = "badge";
+      let label = t.status || "";
+      if (t.expiryDate) {
+        const days = Math.round((new Date(t.expiryDate + "T12:00:00") - today) / 86400000);
+        if (days < 0) { badge.classList.add("bad"); label = "Abgelaufen"; }
+        else if (days <= 30) { badge.classList.add("warn"); label = "Läuft in " + days + " Tagen ab"; }
+        else if (t.status === "Abgeschlossen") badge.classList.add("ok");
+      } else if (t.status === "Abgeschlossen") badge.classList.add("ok");
+      badge.textContent = label || "—";
+      top.append(h, badge); box.append(top);
+      const m = document.createElement("p"); m.className = "meta";
+      const parts = [];
+      if (t.provider) parts.push("Anbieter: " + t.provider);
+      if (t.completedDate) parts.push("Abgeschlossen: " + niceDate(t.completedDate));
+      if (t.expiryDate) parts.push("Gültig bis: " + niceDate(t.expiryDate));
+      m.textContent = parts.join(" · ") || "Keine weiteren Angaben";
+      box.append(m);
+      if (t.note) { const p = document.createElement("p"); p.className = "meta"; p.textContent = t.note; box.append(p); }
+      host.append(box);
+    }
+  }, () => { $("status").textContent = "Deine Schulungen konnten nicht geladen werden. Prüfe die Firebase-Regeln für hrManagement."; $("status").className = "status error"; });
+});
+</script>
+</body>
+</html>

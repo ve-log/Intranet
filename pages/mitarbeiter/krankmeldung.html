@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+<script src="../../assets/js/firebase-config.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VE-Log | Krankmeldung</title>
+<link rel="stylesheet" href="../../assets/css/mitarbeiter-hr.css">
+</head>
+<body>
+<div class="gate" id="gate"><p>Berechtigung wird geprüft …</p></div>
+<div id="app" hidden>
+<header class="topbar"><a href="dashboard.html"><img src="../../assets/img/logo.png" alt="VE-Log"></a><span class="who" id="who"></span></header>
+<nav class="tabs" aria-label="Mitarbeiterbereich">
+<a href="dashboard.html">Dashboard</a>
+<a href="zeiterfassung.html">Arbeitszeiten</a>
+<a href="urlaub.html">Urlaub</a>
+<a href="krankmeldung.html" class="active" aria-current="page">Krankmeldung</a>
+<a href="schulungen.html">Schulungen</a>
+</nav>
+<main>
+<h1>Krankmeldung</h1>
+<p class="lead">Melde dich hier krank. Die Verwaltung sieht deine Meldung sofort. Bitte keine Diagnosen oder medizinischen Details eintragen.</p>
+<section class="card">
+<h2>Neue Krankmeldung</h2>
+<form id="form">
+<div class="row">
+<div><label for="startDate">Krank ab *</label><input id="startDate" type="date" required></div>
+<div><label for="endDate">Voraussichtlich bis</label><input id="endDate" type="date"></div>
+</div>
+<label for="note">Hinweis für die Verwaltung (optional)</label>
+<textarea id="note" maxlength="500" placeholder="Nur organisatorische Angaben, z. B. Arbeitsunfähigkeitsbescheinigung folgt"></textarea>
+<button class="primary" id="send" type="submit">Krankmeldung absenden</button>
+<p class="status" id="status" role="status" aria-live="polite"></p>
+</form>
+</section>
+<section class="card">
+<h2>Meine Krankmeldungen</h2>
+<div class="list" id="list"></div>
+<div class="empty" id="empty" hidden>Du hast noch keine Krankmeldung abgegeben.</div>
+</section>
+</main>
+</div>
+<script type="module">
+import {start, ref, set, push, query, orderByChild, equalTo, onValue, niceDate} from "../../assets/js/mitarbeiter-hr.js";
+const $ = id => document.getElementById(id);
+function show(msg, type) { $("status").textContent = msg; $("status").className = "status" + (type ? " " + type : ""); }
+
+start(({db, user, name, profile}) => {
+  const listRef = query(ref(db, "hrManagement/sickReports"), orderByChild("employeeUid"), equalTo(user.uid));
+  onValue(listRef, snap => {
+    const items = [];
+    snap.forEach(child => { const v = child.val(); if (v && typeof v === "object") items.push(v); });
+    items.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    const host = $("list"); host.replaceChildren();
+    $("empty").hidden = items.length > 0;
+    for (const r of items) {
+      const box = document.createElement("div"); box.className = "item";
+      const top = document.createElement("div"); top.className = "item-top";
+      const h = document.createElement("h3"); h.textContent = "Krank ab " + niceDate(r.startDate) + (r.endDate ? " bis " + niceDate(r.endDate) : "");
+      const badge = document.createElement("span");
+      badge.className = "badge" + (r.status === "Bestätigt" ? " ok" : r.status === "Abgeschlossen" ? "" : " warn");
+      badge.textContent = r.status || "Gemeldet";
+      top.append(h, badge); box.append(top);
+      if (r.note) { const p = document.createElement("p"); p.className = "meta"; p.textContent = r.note; box.append(p); }
+      const m = document.createElement("p"); m.className = "meta"; m.textContent = "Gemeldet am " + niceDate(r.createdAt ? new Date(r.createdAt).toISOString() : ""); box.append(m);
+      host.append(box);
+    }
+  }, () => show("Deine Krankmeldungen konnten nicht geladen werden. Prüfe die Firebase-Regeln für hrManagement.", "error"));
+
+  $("form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const startDate = $("startDate").value, endDate = $("endDate").value, note = $("note").value.trim();
+    if (endDate && endDate < startDate) { show("Das Enddatum darf nicht vor dem Startdatum liegen.", "error"); return; }
+    $("send").disabled = true; show("Wird gesendet …");
+    try {
+      const now = Date.now();
+      const record = {
+        employeeUid: user.uid, employeeName: name, employeeEmail: user.email || profile.email || "",
+        title: "Krankmeldung", startDate, status: "Gemeldet",
+        createdBy: user.uid, createdAt: now, updatedAt: now, updatedBy: user.uid
+      };
+      if (endDate) record.endDate = endDate;
+      if (note) record.note = note;
+      await set(push(ref(db, "hrManagement/sickReports")), record);
+      $("form").reset();
+      show("Deine Krankmeldung wurde gesendet. Gute Besserung!", "success");
+    } catch (err) {
+      console.error(err);
+      show(err.code === "PERMISSION_DENIED" ? "Firebase hat das Speichern verweigert. Prüfe die Regeln für hrManagement." : "Senden fehlgeschlagen. Bitte versuche es erneut.", "error");
+    } finally { $("send").disabled = false; }
+  });
+});
+</script>
+</body>
+</html>
