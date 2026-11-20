@@ -38,3 +38,9 @@ Diese Seiten werden verlinkt, existieren aber noch nicht (führen zur 404-Seite)
 3. **Navigation (Seitenleiste) einmal als Skript** statt in 35 Seiten einzeln pflegen.
 4. **Inline-`onclick`-Handler** (296 Stück) schrittweise durch `addEventListener` ersetzen.
 5. **Service Worker** für Offline-Betrieb auf der Baustelle (erst nach Test der Firebase-Offline-Funktionen).
+
+## Microsoft-Login und Domain-Sperre (@ve-log.de)
+- Registrierung und Login für Mitarbeiter jetzt auch mit Microsoft-Konto (Firebase Auth, Anbieter „Microsoft“).
+- Mitarbeiter-Registrierung nur mit @ve-log.de (Browser-Prüfung + Firebase-Rules, siehe `docs/firebase-database-rules.json`).
+- `MS_TENANT_ID` in `index.html` und `pages/auth/registrieren.html` mit der Azure-Verzeichnis-ID füllen.
+- Azure-Umleitungs-URI: https://ve-log.firebaseapp.com/__/auth/handler

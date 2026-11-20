@@ -24,6 +24,8 @@
     <p class="forgot-password">Passwort vergessen? <a href="#" id="resetPasswordLink">Passwort zurücksetzen</a></p>
     <button class="primary" id="loginButton" type="submit">Anmelden</button>
   </form>
+  <div class="or">oder</div>
+  <button class="ms-btn" id="microsoftButton" type="button"><svg viewBox="0 0 21 21" aria-hidden="true"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>Mit Microsoft anmelden</button>
 
   <button class="link-button guest-link" id="guestLoginButton" type="button">Zum Gast-Login</button>
   <div class="divider"></div>
@@ -36,7 +38,7 @@
 
 <script type="module">
 import {initializeApp, getApps} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import {getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {getAuth, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, OAuthProvider, signInWithPopup, getAdditionalUserInfo, deleteUser} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {getDatabase, ref, get} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 const firebaseConfig = window.VELOG_FIREBASE_CONFIG;
@@ -47,9 +49,14 @@ const db = getDatabase(app);
 const form = document.getElementById("loginForm");
 const loginButton = document.getElementById("loginButton");
 const guestButton = document.getElementById("guestLoginButton");
+const msButton = document.getElementById("microsoftButton");
 const resetLink = document.getElementById("resetPasswordLink");
 const statusEl = document.getElementById("status");
 let busy = false;
+
+const ERLAUBTE_DOMAIN = "@ve-log.de";
+// Optional, aber empfohlen: Verzeichnis-(Mandanten-)ID aus Azure eintragen (siehe Registrierung).
+const MS_TENANT_ID = "";
 
 const destinations = {
   gast: "pages/gast/dashboard.html",
@@ -71,6 +78,9 @@ function errorText(error) {
     "auth/user-disabled": "Dieses Konto wurde deaktiviert.",
     "auth/too-many-requests": "Zu viele Anmeldeversuche. Bitte später erneut versuchen.",
     "auth/network-request-failed": "Netzwerkfehler. Bitte Internetverbindung prüfen.",
+    "auth/popup-closed-by-user": "Das Microsoft-Fenster wurde geschlossen. Bitte erneut versuchen.",
+    "auth/popup-blocked": "Das Popup wurde vom Browser blockiert. Bitte Popups für diese Seite erlauben.",
+    "auth/account-exists-with-different-credential": "Zu dieser E-Mail gibt es bereits ein Konto mit Passwort. Bitte mit E-Mail und Passwort anmelden.",
     "auth/operation-not-allowed": "E-Mail-/Passwort-Anmeldung ist in Firebase nicht aktiviert.",
     "PERMISSION_DENIED": "Firebase verweigert den Zugriff auf die Rolleninformationen. Bitte Realtime-Database-Regeln prüfen.",
     "database/permission-denied": "Firebase verweigert den Zugriff auf die Rolleninformationen. Bitte Realtime-Database-Regeln prüfen."
@@ -104,6 +114,7 @@ async function login(event, requireGuest=false) {
   busy = true;
   loginButton.disabled = true;
   guestButton.disabled = true;
+  msButton.disabled = true;
   showStatus("Anmeldung läuft ...");
   let signedInUser = null;
 
@@ -135,11 +146,65 @@ async function login(event, requireGuest=false) {
     busy = false;
     loginButton.disabled = false;
     guestButton.disabled = false;
+    msButton.disabled = false;
   }
 }
 
 form.addEventListener("submit", (event) => login(event, false));
 guestButton.addEventListener("click", (event) => login(event, true));
+
+msButton.addEventListener("click", async () => {
+  if (busy) return;
+  busy = true;
+  loginButton.disabled = true;
+  guestButton.disabled = true;
+  msButton.disabled = true;
+  showStatus("Microsoft-Anmeldung wird geöffnet ...");
+
+  const provider = new OAuthProvider("microsoft.com");
+  const params = {prompt: "select_account"};
+  if (MS_TENANT_ID) params.tenant = MS_TENANT_ID;
+  provider.setCustomParameters(params);
+
+  let user = null;
+  let isNew = false;
+  try {
+    const credential = await signInWithPopup(auth, provider);
+    user = credential.user;
+    const info = getAdditionalUserInfo(credential);
+    isNew = !!(info && info.isNewUser);
+    const msProvider = user.providerData.find(p => p.providerId === "microsoft.com");
+    const email = (user.email || (msProvider && msProvider.email) || "").toLowerCase();
+
+    if (!email.endsWith(ERLAUBTE_DOMAIN)) {
+      throw new Error("Nur Konten mit einer " + ERLAUBTE_DOMAIN + "-Adresse dürfen sich anmelden.");
+    }
+
+    const snapshot = await get(ref(db, "roles/" + user.uid));
+    if (!snapshot.exists()) {
+      throw new Error("Für dieses Microsoft-Konto gibt es noch keinen Zugang. Bitte zuerst über „Als Mitarbeiter registrieren“ ein Konto erstellen.");
+    }
+    const role = snapshot.val();
+    if (!["mitarbeiter","manager","admin","superadmin"].includes(role)) {
+      throw new Error("Für dieses Konto ist keine gültige Rolle hinterlegt.");
+    }
+
+    showStatus("Anmeldung erfolgreich. Weiterleitung ...", "success");
+    window.location.replace(destinations[role]);
+  } catch (error) {
+    console.error("Microsoft-Anmeldefehler:", error);
+    if (user) {
+      // Frisch angelegte, nicht freigeschaltete Konten wieder entfernen
+      if (isNew) { try { await deleteUser(user); } catch (e) { try { await signOut(auth); } catch (e2) {} } }
+      else { try { await signOut(auth); } catch (e) { console.error(e); } }
+    }
+    showStatus(errorText(error), "error");
+    busy = false;
+    loginButton.disabled = false;
+    guestButton.disabled = false;
+    msButton.disabled = false;
+  }
+});
 </script>
 </body>
 </html>

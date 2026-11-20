@@ -12,23 +12,25 @@
 <main class="box">
   <button class="back-btn" type="button" onclick="location.href='../../index.html'">← Zurück zum Login</button>
   <h2>Mitarbeiterregistrierung</h2>
+  <button class="ms-btn" id="microsoftButton" type="button"><svg viewBox="0 0 21 21" aria-hidden="true"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>Mit Microsoft-Konto registrieren</button>
+  <div class="or">oder mit E-Mail und Passwort</div>
   <form id="registerForm">
     <input id="vorname" type="text" placeholder="Vorname" autocomplete="given-name" required>
     <input id="nachname" type="text" placeholder="Nachname" autocomplete="family-name" required>
-    <input id="email" type="email" placeholder="E-Mail" autocomplete="email" required>
+    <input id="email" type="email" placeholder="E-Mail (@ve-log.de)" autocomplete="email" required>
     <input id="handy" type="tel" placeholder="Telefonnummer" autocomplete="tel">
     <input id="passwort" type="password" placeholder="Passwort (mindestens 6 Zeichen)" autocomplete="new-password" minlength="6" required>
     <input id="passwort2" type="password" placeholder="Passwort wiederholen" autocomplete="new-password" minlength="6" required>
     <button class="register-btn" id="registerButton" type="submit">Mitarbeiterkonto erstellen</button>
   </form>
-  <p class="info">Jedes neue Konto erhält automatisch die Rolle „Mitarbeiter“.</p>
+  <p class="info">Registrierung nur mit einer @ve-log.de-Adresse möglich. Jedes neue Konto erhält automatisch die Rolle „Mitarbeiter“.</p>
   <p id="status" class="status" role="status" aria-live="polite"></p>
 </main>
 
 <script type="module">
 import {initializeApp, getApps} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import {getAuth, createUserWithEmailAndPassword, sendEmailVerification} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import {getDatabase, ref, set} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+import {getAuth, createUserWithEmailAndPassword, sendEmailVerification, OAuthProvider, signInWithPopup, getAdditionalUserInfo, deleteUser, signOut} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {getDatabase, ref, set, get} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 const firebaseConfig = window.VELOG_FIREBASE_CONFIG;
 
@@ -38,6 +40,15 @@ const db = getDatabase(app);
 const form = document.getElementById("registerForm");
 const button = document.getElementById("registerButton");
 const statusEl = document.getElementById("status");
+const msButton = document.getElementById("microsoftButton");
+
+// Nur diese Domain darf sich registrieren (zusätzlich in den Firebase-Rules absichern!)
+const ERLAUBTE_DOMAIN = "@ve-log.de";
+// Optional, aber empfohlen: Verzeichnis-(Mandanten-)ID aus Azure eintragen.
+// Dann können sich nur Konten aus eurem Microsoft-365-Mandanten anmelden.
+const MS_TENANT_ID = "";
+
+const istErlaubt = (mail) => (mail || "").trim().toLowerCase().endsWith(ERLAUBTE_DOMAIN);
 
 function showStatus(message, type="") {
   statusEl.textContent = message;
@@ -50,6 +61,9 @@ function errorText(error) {
     "auth/invalid-email": "Bitte eine gültige E-Mail-Adresse eingeben.",
     "auth/operation-not-allowed": "E-Mail-/Passwort-Registrierung ist in Firebase nicht aktiviert.",
     "auth/network-request-failed": "Netzwerkfehler. Bitte Internetverbindung prüfen.",
+    "auth/popup-closed-by-user": "Das Microsoft-Fenster wurde geschlossen. Bitte erneut versuchen.",
+    "auth/popup-blocked": "Das Popup wurde vom Browser blockiert. Bitte Popups für diese Seite erlauben.",
+    "auth/account-exists-with-different-credential": "Zu dieser E-Mail gibt es bereits ein Konto mit Passwort. Bitte normal anmelden.",
     "PERMISSION_DENIED": "Firebase hat den Datenbankzugriff verweigert. Prüfe die Realtime-Database-Regeln."
   };
   return messages[error.code] || error.message || "Registrierung fehlgeschlagen.";
@@ -70,6 +84,12 @@ form.addEventListener("submit", async (event) => {
   const handy = document.getElementById("handy").value.trim();
   const password = document.getElementById("passwort").value;
   const password2 = document.getElementById("passwort2").value;
+
+  if (!istErlaubt(email)) {
+    showStatus("Die Registrierung ist nur mit einer E-Mail-Adresse von " + ERLAUBTE_DOMAIN + " möglich.", "error");
+    button.disabled = false;
+    return;
+  }
 
   if (password !== password2) {
     showStatus("Die Passwörter stimmen nicht überein.", "error");
@@ -127,6 +147,74 @@ form.addEventListener("submit", async (event) => {
     }
 
     showStatus(detail, "error");
+    button.disabled = false;
+  }
+});
+
+// ---------- Registrierung mit Microsoft ----------
+msButton.addEventListener("click", async () => {
+  msButton.disabled = true;
+  button.disabled = true;
+  showStatus("Microsoft-Anmeldung wird geöffnet ...");
+
+  const provider = new OAuthProvider("microsoft.com");
+  const params = {prompt: "select_account"};
+  if (MS_TENANT_ID) params.tenant = MS_TENANT_ID;
+  provider.setCustomParameters(params);
+
+  let user = null;
+  try {
+    const credential = await signInWithPopup(auth, provider);
+    user = credential.user;
+    const info = getAdditionalUserInfo(credential);
+    const profile = info && info.profile ? info.profile : {};
+    const msProvider = user.providerData.find(p => p.providerId === "microsoft.com");
+    const email = (user.email || (msProvider && msProvider.email) || profile.mail || profile.userPrincipalName || "").toLowerCase();
+
+    // Falsche Domain: Konto wieder löschen
+    if (!istErlaubt(email)) {
+      try { await deleteUser(user); } catch (e) { await signOut(auth); }
+      showStatus("Nur Konten mit einer " + ERLAUBTE_DOMAIN + "-Adresse dürfen sich registrieren.", "error");
+      return;
+    }
+
+    // Schon registriert? Dann nicht überschreiben.
+    const roleSnap = await get(ref(db, "roles/" + user.uid));
+    if (roleSnap.exists()) {
+      await signOut(auth);
+      showStatus("Du bist bereits registriert. Bitte melde dich auf der Login-Seite an.", "success");
+      setTimeout(() => location.replace("../../index.html"), 2500);
+      return;
+    }
+
+    let vorname = profile.givenName || "";
+    let nachname = profile.surname || "";
+    if (!vorname && !nachname && user.displayName) {
+      const parts = user.displayName.trim().split(/\s+/);
+      vorname = parts.shift() || "";
+      nachname = parts.join(" ");
+    }
+
+    // Reihenfolge wie bei der normalen Registrierung: erst Rolle, dann Profil
+    await set(ref(db, "roles/" + user.uid), "mitarbeiter");
+    await set(ref(db, "users/" + user.uid), {
+      uid: user.uid,
+      vorname,
+      nachname,
+      email,
+      handy: profile.mobilePhone || "",
+      rolle: "mitarbeiter",
+      aktiv: true,
+      erstelltAm: new Date().toISOString()
+    });
+
+    await signOut(auth);
+    showStatus("Konto erstellt! Deine Rolle ist Mitarbeiter. Du wirst zum Login weitergeleitet, dort kannst du dich mit Microsoft anmelden.", "success");
+    setTimeout(() => location.replace("../../index.html"), 2500);
+  } catch (error) {
+    console.error("Microsoft-Registrierung fehlgeschlagen:", error);
+    showStatus(errorText(error), "error");
+    msButton.disabled = false;
     button.disabled = false;
   }
 });
