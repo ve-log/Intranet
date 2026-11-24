@@ -20,7 +20,7 @@
   var ADMIN_ROLES = ["admin", "superadmin"];
   var RESTRICTED = [
     "personalmanagement", "personaluebersicht", "mitarbeiter-anlegen", "urlaubverwaltung",
-    "benutzerverwaltung", "unternehmensdaten", "sicherheit", "protokolle", "backup", "datenexport"
+    "benutzerverwaltung", "genehmiger-vorlagen", "unternehmensdaten", "sicherheit", "protokolle", "backup", "datenexport"
   ];
   var script = document.currentScript;
   var require = script && script.getAttribute("data-require") === "admin";

@@ -10,7 +10,7 @@
  * Einbindung (am Ende der Formularseite):  <script type="module" src="../../assets/js/einreichen.js"></script>
  * Voraussetzung: Seite hat <button id="saveNachweis"> (haben alle Nachweis-Formulare).
  */
-import { init, loadApprovers, fillApproverSelect, ref, update, serverTimestamp } from "./approvals.js";
+import { init, loadFormApprovers, fillApproverSelect, ref, update, serverTimestamp } from "./approvals.js";
 
 const saveButton = document.getElementById("saveNachweis");
 if (saveButton) {
@@ -43,7 +43,7 @@ if (saveButton) {
   box.className = "senden-an";
   box.hidden = true;
   box.innerHTML = `<h3>Senden an</h3>
-    <p>Wähle den Bauleiter, der dieses Formular prüfen soll, und klicke auf „Senden“. Er bekommt es direkt in sein Konto und eine E-Mail.</p>
+    <p id="sendenHinweis">Wähle die Person, die dieses Formular prüfen soll, und klicke auf „Senden“. Sie bekommt es direkt in ihr Konto und eine E-Mail.</p>
     <div class="zeile"><select id="empfaengerSelect" aria-label="Empfänger"></select></div>
     <div class="meldung" id="sendenMeldung" role="status" aria-live="polite"></div>`;
   (saveButton.parentElement || saveButton).before(box);
@@ -59,8 +59,12 @@ if (saveButton) {
     onReady: async (c) => {
       ctx = c;
       try {
-        const n = fillApproverSelect(select, await loadApprovers(c));
-        if (!n) say("Es sind noch keine Empfänger hinterlegt. Bitte Administrator kontaktieren.", "fehler");
+        // Die Genehmiger für diese Vorlage legen Administratoren/Superadministratoren fest.
+        const typ = document.body.dataset.nachweisTyp || "";
+        const { list, configured } = await loadFormApprovers(c, typ);
+        const n = fillApproverSelect(select, list);
+        if (!n) say("Für diese Vorlage ist noch kein Genehmiger hinterlegt. Bitte Administrator kontaktieren.", "fehler");
+        else if (configured && n === 1) box.querySelector("#sendenHinweis").textContent = "Für dieses Formular ist " + list[0].name + " als Genehmiger hinterlegt.";
         box.hidden = false;
       } catch (e) { box.hidden = false; say("Empfängerliste konnte nicht geladen werden: " + e.message, "fehler"); }
     },

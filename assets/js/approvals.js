@@ -163,6 +163,46 @@ export async function loadApprovers(ctx) {
   return out.sort((a, b) => a.name.localeCompare(b.name, "de"));
 }
 
+/** Alle Formularvorlagen (Schlüssel wie in nachweise.typ) mit Anzeigenamen. */
+export const FORM_TYPES = {
+  arbeitsnachweis: "Arbeitsnachweis",
+  arbeitsnachweis_lkw: "Arbeitsnachweis LKW",
+  leistungsnachweis: "Leistungsnachweis",
+  materialausgabe: "Materialausgabe",
+  lieferschein: "Liefer-/Empfangsschein",
+  material_empfaenger: "Material – Empfänger",
+  material_baustelle: "Material – Baustelle",
+  material_absender: "Material – Absender",
+  fuhrunternehmer: "Fuhrunternehmer",
+};
+
+/** Rollen, die einen Antrag entscheiden dürfen und deshalb als Genehmiger wählbar sind. */
+export const APPROVER_ROLES = ["manager", "admin", "superadmin"];
+
+/**
+ * Empfänger für „Senden an“ bei einer bestimmten Vorlage.
+ * Quelle: formApprovers/{typ} (von Admin/Superadmin festgelegt). Ist für die Vorlage nichts festgelegt,
+ * gilt wie bisher die allgemeine Liste approvers/ (alle Manager).
+ * Gibt { list: [{uid,name,label}], configured: boolean } zurück. Der eigene Benutzer fehlt (außer Superadmin).
+ */
+export async function loadFormApprovers(ctx, typ) {
+  let configured = false, list = [];
+  if (typ && Object.hasOwn(FORM_TYPES, typ)) {
+    const snap = await get(ref(ctx.db, "formApprovers/" + typ));
+    if (snap.exists()) {
+      configured = true;
+      snap.forEach((c) => {
+        const v = c.val() || {};
+        if (!v.name || (c.key === ctx.user.uid && ctx.role !== "superadmin")) return;
+        list.push({ uid: c.key, name: v.name, label: v.funktion ? `${v.name} (${v.funktion})` : v.name });
+      });
+      list.sort((a, b) => a.name.localeCompare(b.name, "de"));
+    }
+  }
+  if (!configured) list = await loadApprovers(ctx);
+  return { list, configured };
+}
+
 /** Füllt ein <select> mit den Empfängern. Gibt die Anzahl zurück. */
 export function fillApproverSelect(select, list) {
   select.replaceChildren();
@@ -170,6 +210,7 @@ export function fillApproverSelect(select, list) {
   first.value = ""; first.textContent = list.length ? "– bitte auswählen –" : "Keine Empfänger hinterlegt";
   select.append(first);
   list.forEach((a) => { const o = document.createElement("option"); o.value = a.uid; o.textContent = a.label; o.dataset.name = a.name; select.append(o); });
+  if (list.length === 1) select.value = list[0].uid; // nur ein Genehmiger hinterlegt -> automatisch gewählt
   return list.length;
 }
 

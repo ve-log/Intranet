@@ -76,3 +76,14 @@ Diese Seiten werden verlinkt, existieren aber noch nicht (führen zur 404-Seite)
 - Alle Formulare (Mitarbeiter und Gast) haben dieselbe Knopfzeile: **Speichern**, **Senden**, **Drucken**.
 - „Senden“ speichert, setzt den Status „eingereicht“ und schickt das Formular an den gewählten Empfänger (`assets/js/einreichen.js`).
 - Entfernt: doppelte Knöpfe „Als PDF speichern“ / „PDF“ (taten dasselbe wie Drucken) und der Link „Meine Nachweise / PDF senden“.
+
+## Genehmiger je Vorlage, Senden in „Meine Nachweise“
+
+- **Neue Seite** `pages/personal/genehmiger-vorlagen.html` (nur Admin/Superadmin): pro Formularvorlage festlegen, wer genehmigen darf.
+  Gespeichert unter `formApprovers/<Vorlage>/<uid>` (Name wird mitgeführt, weil Mitarbeiter `users/` nicht lesen dürfen).
+  Ist für eine Vorlage niemand festgelegt, gilt wie bisher die Liste aller Manager (`approvers/`).
+- **Formulare** (`einreichen.js`): „Senden an“ zeigt automatisch nur die für die Vorlage hinterlegten Genehmiger; bei genau einem ist er vorgewählt.
+- **Meine Nachweise**: Entwürfe haben jetzt „Senden“ (Zeile und Detailansicht). Fehlt die PDF, wird sie beim Senden erzeugt. Die Rolle wird jetzt aus `roles/<uid>` gelesen (Claim nur als Rückfall), Manager sind ergänzt.
+- **Benutzerverwaltung**: Im Bearbeiten-Dialog kann der Superadmin die Vorlagen-Genehmigungen eines Benutzers setzen (Admin sieht sie nur). Beim Löschen/Herabstufen werden sie entfernt.
+- **Regeln** (`database.rules.json`, Kopie in `docs/`): neuer Knoten `formApprovers`; `nachweise/.../empfaengerUid` muss in `formApprovers/<typ>` stehen (oder – falls nichts festgelegt – in `approvers`). **Regeln müssen in Firebase neu veröffentlicht werden.**
+- `access.js`: `genehmiger-vorlagen` ist für Nicht-Admins ausgeblendet/gesperrt.

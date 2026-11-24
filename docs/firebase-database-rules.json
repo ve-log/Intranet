@@ -112,7 +112,7 @@
           },
           ".read": "auth != null && root.child('roles').child(auth.uid).val() != 'gast' && data.child('empfaengerUid').val() == auth.uid && data.child('status').val() == 'eingereicht'",
           "empfaengerUid": {
-            ".validate": "newData.isString() && root.child('approvers').child(newData.val()).exists()"
+            ".validate": "newData.isString() && (root.child('formApprovers').child(newData.parent().child('typ').val()).child(newData.val()).exists() || (!root.child('formApprovers').child(newData.parent().child('typ').val()).exists() && root.child('approvers').child(newData.val()).exists()))"
           },
           "empfaengerName": {
             ".validate": "newData.isString() && newData.val().length <= 120"
@@ -364,6 +364,144 @@
         },
         "$other": {
           ".validate": false
+        }
+      }
+    },
+    "formApprovers": {
+      ".read": "auth != null && (root.child('roles').child(auth.uid).val() == 'mitarbeiter' || root.child('roles').child(auth.uid).val() == 'manager' || root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')",
+      "arbeitsnachweis": {
+        ".write": "auth != null && (root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')",
+        "$uid": {
+          ".validate": "newData.hasChild('name')",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "funktion": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "arbeitsnachweis_lkw": {
+        ".write": "auth != null && (root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')",
+        "$uid": {
+          ".validate": "newData.hasChild('name')",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "funktion": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "lieferschein": {
+        ".write": "auth != null && (root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')",
+        "$uid": {
+          ".validate": "newData.hasChild('name')",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "funktion": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "leistungsnachweis": {
+        ".write": "auth != null && (root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')",
+        "$uid": {
+          ".validate": "newData.hasChild('name')",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "funktion": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "materialausgabe": {
+        ".write": "auth != null && (root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')",
+        "$uid": {
+          ".validate": "newData.hasChild('name')",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "funktion": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "material_empfaenger": {
+        ".write": "auth != null && (root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')",
+        "$uid": {
+          ".validate": "newData.hasChild('name')",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "funktion": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "material_baustelle": {
+        ".write": "auth != null && (root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')",
+        "$uid": {
+          ".validate": "newData.hasChild('name')",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "funktion": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "material_absender": {
+        ".write": "auth != null && (root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')",
+        "$uid": {
+          ".validate": "newData.hasChild('name')",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "funktion": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "fuhrunternehmer": {
+        ".write": "auth != null && (root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')",
+        "$uid": {
+          ".validate": "newData.hasChild('name')",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          },
+          "funktion": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "$other": {
+            ".validate": false
+          }
         }
       }
     }

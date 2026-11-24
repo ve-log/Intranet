@@ -96,3 +96,11 @@ label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
   .pagination { align-items: flex-start; flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.approver-box { margin-top: 18px; padding: 16px; border: 1px solid #e4e7ec; border-radius: 12px; background: #fafafb; }
+.approver-box h3 { margin: 0; font-size: 14px; }
+.approver-box .edit-note { margin: 6px 0 12px; }
+.approver-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+.approver-grid label { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.approver-grid input { width: 17px; height: 17px; min-height: 0; accent-color: var(--brand, #8e2f2b); }
+@media (max-width: 700px) { .approver-grid { grid-template-columns: 1fr; } }

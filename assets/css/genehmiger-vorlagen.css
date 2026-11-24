@@ -1,0 +1,20 @@
+/* Genehmiger je Formularvorlage (zusätzlich zu wartung.css) */
+.vg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px;align-items:start}
+.vg-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);min-width:0}
+.vg-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+.vg-head h3{margin:0;font-size:15px}
+.vg-hint{font-size:12px;color:var(--muted);margin:0 0 12px}
+.vg-hint.warn-text{color:#946e2e}
+.vg-tools{display:flex;gap:6px;margin-bottom:8px}
+.vg-list{display:grid;gap:4px;max-height:280px;overflow:auto;margin:0;padding:0;list-style:none}
+.vg-list label{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:13px}
+.vg-list label:hover{background:#faf6f5}
+.vg-list input{width:17px;height:17px;accent-color:var(--brand);flex:none}
+.vg-list .who{display:grid;min-width:0}
+.vg-list .who small{color:var(--muted);font-size:11px}
+.vg-list label.stale{border-color:#f1dfb4;background:#fff9ec}
+.vg-search{max-width:340px;flex:1 1 220px}
+.vg-toast{position:fixed;right:18px;bottom:18px;background:#232735;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;max-width:80vw}
+.vg-toast.show{opacity:1;transform:none}
+.vg-toast.err{background:#a43d38}
+.vg-denied{max-width:480px;margin:80px auto;text-align:center}
