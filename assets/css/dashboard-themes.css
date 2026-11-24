@@ -1,0 +1,47 @@
+/* Design-Vorlagen fürs Dashboard – Auswahl über html[data-theme="…"] (siehe Auswahlfeld in der Kopfleiste) */
+
+/* 2) Hell & minimal */
+html[data-theme="minimal"] .intro{background:#fff;color:var(--ink);box-shadow:var(--shadow);border:1px solid var(--line);border-radius:14px}
+html[data-theme="minimal"] .intro::before{width:0}
+html[data-theme="minimal"] .intro h1{color:var(--ink)}
+html[data-theme="minimal"] .intro .eyebrow{color:var(--brand)}
+html[data-theme="minimal"] .intro .muted,html[data-theme="minimal"] .intro p{color:var(--muted)}
+html[data-theme="minimal"] .intro .date{background:#f3f4f7;border-color:var(--line);color:#475467}
+html[data-theme="minimal"] .stat,html[data-theme="minimal"] .panel,html[data-theme="minimal"] .module,html[data-theme="minimal"] .time-live-panel{box-shadow:none}
+html[data-theme="minimal"] .avatar,html[data-theme="minimal"] .profile-avatar{background:var(--brand-soft);color:var(--brand);border-color:#fff}
+html[data-theme="minimal"] .stat::before{display:none}
+
+/* 3) Corporate Rot */
+html[data-theme="corporate"]{--navy:#6b2220;--navy-2:#8e2f2b}
+html[data-theme="corporate"] .intro{background:radial-gradient(120% 140% at 100% 0%,#b5524c 0%,transparent 55%),linear-gradient(135deg,#6b2220 0%,#8e2f2b 100%);box-shadow:0 10px 30px #6b222040}
+html[data-theme="corporate"] .intro::before{background:#fff;opacity:.55}
+html[data-theme="corporate"] .intro .eyebrow{color:#ffd9d6}
+html[data-theme="corporate"] .intro .muted,html[data-theme="corporate"] .intro p{color:#f6d6d3}
+html[data-theme="corporate"] .sidebar{background:linear-gradient(180deg,#fff,#fbf4f3)}
+html[data-theme="corporate"] .topbar{border-bottom:3px solid var(--brand)}
+html[data-theme="corporate"] .avatar,html[data-theme="corporate"] .profile-avatar{background:var(--brand)}
+
+/* 4) Dunkelmodus */
+html[data-theme="dark"]{--ink:#e7eaf2;--muted:#9aa3b8;--line:#2c3550;--bg:#10141f;--brand-soft:#3a2024;--shadow:0 1px 2px #0006;--shadow-hover:0 8px 24px #0008;color-scheme:dark}
+html[data-theme="dark"] body{background:var(--bg);color:var(--ink)}
+html[data-theme="dark"] .sidebar,html[data-theme="dark"] .panel,html[data-theme="dark"] .stat,html[data-theme="dark"] .module,html[data-theme="dark"] .time-live-panel,html[data-theme="dark"] .employee-time-card,html[data-theme="dark"] .search,html[data-theme="dark"] .quiet-button,html[data-theme="dark"] .dialog,html[data-theme="dark"] .action{background:#181e2e;color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] .topbar{background:#10141fe6;border-bottom-color:var(--line)}
+html[data-theme="dark"] .nav a{color:#b4bdd2}
+html[data-theme="dark"] .nav a:hover{background:#222a40;color:#fff}
+html[data-theme="dark"] .nav a.active{background:#3a2024;color:#ffb3ad}
+html[data-theme="dark"] .stat-top,html[data-theme="dark"] .admin-heading h2,html[data-theme="dark"] .section-head h2{color:#b4bdd2}
+html[data-theme="dark"] .tag,html[data-theme="dark"] .pill{background:#232b42;color:#b4bdd2}
+html[data-theme="dark"] .time-live-stat,html[data-theme="dark"] .empty{background:#141a29;border-color:var(--line)}
+html[data-theme="dark"] .panel-head{border-bottom-color:var(--line)}
+html[data-theme="dark"] .action:hover{background:#1f2740}
+html[data-theme="dark"] input,html[data-theme="dark"] .task-form input,html[data-theme="dark"] .search input{background:#141a29;color:var(--ink);border-color:var(--line)}
+html[data-theme="dark"] .demo-banner,html[data-theme="dark"] .notice{background:#2c2616;border-color:#5a4a1c;color:#e8cf8f}
+html[data-theme="dark"] .role-pill{background:#3a2024;color:#ffb3ad}
+html[data-theme="dark"] .time-live-table tbody tr:hover{background:#1d2438}
+html[data-theme="dark"] .bottom{border-top-color:var(--line)}
+html[data-theme="dark"] .intro{background:linear-gradient(135deg,#1c2542,#2c3a66)}
+
+/* Auswahlfeld */
+.theme-pick{border:1px solid var(--line);background:#fff;color:#344054;border-radius:8px;padding:8px 10px;font:inherit;font-size:13px;font-weight:600;max-width:150px}
+html[data-theme="dark"] .theme-pick{background:#181e2e;color:var(--ink)}
+@media(max-width:760px){.theme-pick{max-width:110px}}

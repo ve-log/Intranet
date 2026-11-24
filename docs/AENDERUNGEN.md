@@ -87,3 +87,7 @@ Diese Seiten werden verlinkt, existieren aber noch nicht (führen zur 404-Seite)
 - **Benutzerverwaltung**: Im Bearbeiten-Dialog kann der Superadmin die Vorlagen-Genehmigungen eines Benutzers setzen (Admin sieht sie nur). Beim Löschen/Herabstufen werden sie entfernt.
 - **Regeln** (`database.rules.json`, Kopie in `docs/`): neuer Knoten `formApprovers`; `nachweise/.../empfaengerUid` muss in `formApprovers/<typ>` stehen (oder – falls nichts festgelegt – in `approvers`). **Regeln müssen in Firebase neu veröffentlicht werden.**
 - `access.js`: `genehmiger-vorlagen` ist für Nicht-Admins ausgeblendet/gesperrt.
+
+## Dashboard-Design
+- Neue Datei `assets/css/dashboard-pro.css` (wird in `pages/mitarbeiter/dashboard.html` nach `dashboard.css` geladen): dunkler Kopfbereich, kompaktere Kennzahlen, ruhigere Karten, Bereiche in 3 Spalten, bessere Handy-Ansicht. Rein visuell; zum Zurücksetzen die Zeile mit `dashboard-pro.css` entfernen.
+- Design-Vorlagen: `assets/css/dashboard-themes.css` + Auswahlfeld in der Kopfleiste des Dashboards (Business dunkel, Hell & minimal, Corporate Rot, Dunkelmodus). Die Wahl wird pro Browser gespeichert.
