@@ -2,7 +2,7 @@
 <link rel="icon" type="image/png" href="../../assets/img/favicon.png">
 <script src="../../assets/js/firebase-config.js"></script>
 <script src="../../assets/js/access.js"></script><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>VE-Log · Anträge &amp; Genehmigungen</title><link rel="stylesheet" href="../../assets/css/wartung.css"><link rel="stylesheet" href="../../assets/css/genehmigungen.css"></head><body><aside class="sidebar"><a class="brand" href="../mitarbeiter/dashboard.html"><img src="../../assets/img/logo.png" alt="VE-Log" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><b hidden>VE-Log</b><small>MITARBEITERPORTAL</small></a><div class="nav-label">ARBEITSPLATZ</div><nav><a href="../mitarbeiter/dashboard.html">▦ Dashboard</a><a href="personalmanagement.html">♙ Mitarbeiter</a><a href="../formulare/formular.html">▤ Formulare</a><a href="../mitarbeiter/urlaub.html">▦ Urlaub</a><a href="../betrieb/fahrzeuge.html">▱ Fahrzeuge</a><a href="../betrieb/wartung.html">⚙ Wartung</a><a class="active" href="genehmigungen.html">✓ Genehmigungen</a><a href="../betrieb/einsatzplanung.html">▦ Einsatzplanung</a><a href="../mitarbeiter/kommunikation.html">☏ Kommunikation</a></nav><div class="side-note">Alles für deinen Arbeitsalltag.<br>Einfach an einem Ort.</div></aside><div class="shell"><header><div class="crumb">Arbeitsplatz / <strong>Anträge &amp; Genehmigungen</strong></div><div class="user"><span class="avatar">VE</span><span><strong id="userEmail">Anmeldung wird geprüft</strong><br><span class="muted">Firebase-Konto</span></span></div></header><main id="main">
-<section class="intro"><div><div class="eyebrow">Betrieb &amp; Verwaltung</div><h1 id="pageTitle">Anträge &amp; Genehmigungen</h1><p class="muted" id="pageSub">Urlaub und Formulare prüfen und entscheiden.</p></div><a class="btn primary" href="../mitarbeiter/urlaubformular.html">＋ Urlaub beantragen</a></section>
+<section class="intro"><div><div class="eyebrow">Betrieb &amp; Verwaltung</div><h1 id="pageTitle">Anträge &amp; Genehmigungen</h1><p class="muted" id="pageSub">Hier siehst du Urlaub und Formulare, die dir gesendet wurden, und entscheidest darüber.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn" id="rebuildBtn" hidden title="Liest alle Manager/Bauleiter neu ein und füllt damit die Auswahl „Senden an“ in den Formularen">Empfängerliste aktualisieren</button><a class="btn primary" href="../mitarbeiter/urlaubformular.html">＋ Urlaub beantragen</a></div></section>
 <div class="demo" id="connectionNotice">Verbindung wird geprüft …</div>
 <section class="stats">
 <article class="stat"><div class="stat-label">Offen <span>◷</span></div><div class="metric" id="openMetric">—</div><div class="sub" id="openSub">Warten auf Entscheidung</div></article>
@@ -30,7 +30,7 @@
 <div class="dialog-actions"><button type="button" class="btn" data-close>Schließen</button><button type="button" class="btn" id="withdrawBtn" hidden>Antrag zurückziehen</button><button type="button" class="btn danger" id="rejectBtn" hidden>Ablehnen</button><button type="button" class="btn primary" id="approveBtn" hidden>Genehmigen</button></div></dialog>
 
 <script type="module">
-import {init, watchApprovals, decide, withdraw, canDecide, DECIDERS, STATUS_LABEL, ROLE_LABEL, niceDate, niceDateTime, ref, get} from "../../assets/js/approvals.js";
+import {init, watchApprovals, decide, withdraw, canDecide, rebuildApprovers, DECIDERS, STATUS_LABEL, ROLE_LABEL, niceDate, niceDateTime, ref, get} from "../../assets/js/approvals.js";
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 let ctx = null, data = [], current = null, deepLinkDone = false, pdfUrl = null;
@@ -71,7 +71,7 @@ function dl(rows) {
 async function openDetail(v) {
   current = v; const d = v.details || {};
   $("dTitle").textContent = v.title;
-  dl([["Art", v.type], ["Mitarbeiter", v.person], ["Eingereicht", v.dateLabel || niceDateTime(v.createdAt)],
+  dl([["Art", v.type], ["Mitarbeiter", v.person], ["Gesendet an", v.assigneeName], ["Eingereicht", v.dateLabel || niceDateTime(v.createdAt)],
       ["Zeitraum", d.von ? niceDate(d.von) + (d.bis ? " – " + niceDate(d.bis) : "") : ""], ["Arbeitstage", d.tage],
       ["Vertretung", d.vertretung], ["Formular", d.formular], ["Datum", d.datum ? niceDate(d.datum) : ""], ["Bemerkung", d.bemerkung], ["Status", STATUS_LABEL[v.status]]]);
   // Entscheidung anzeigen
@@ -125,6 +125,12 @@ $("pdfBtn").onclick = async () => {
     $("pdfLink").href = pdfUrl; $("pdfLink").hidden = false; $("pdfMsg").textContent = pdf.filename || "";
   } catch (e) { $("pdfMsg").textContent = "Formular nicht lesbar: " + e.message; $("pdfBtn").disabled = false; }
 };
+$("rebuildBtn").onclick = async () => {
+  $("rebuildBtn").disabled = true;
+  try { const r = await rebuildApprovers(); notice("Empfängerliste aktualisiert: " + r.count + " Empfänger (Benutzer mit Rolle Manager)."); }
+  catch (e) { notice("Empfängerliste konnte nicht aktualisiert werden (Functions veröffentlicht?): " + e.message, true); }
+  finally { $("rebuildBtn").disabled = false; }
+};
 document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $("detail").close());
 ["search", "filter", "type", "scope"].forEach(id => $(id).addEventListener(id === "search" ? "input" : "change", render));
 
@@ -133,7 +139,7 @@ init({
   onReady: c => {
     ctx = c; const isDecider = DECIDERS.includes(c.role);
     $("userEmail").textContent = c.name;
-    $("scope").hidden = !isDecider;
+    $("scope").hidden = !isDecider; $("rebuildBtn").hidden = !(c.role === "admin" || c.role === "superadmin");
     if (!isDecider) { $("pageTitle").textContent = "Meine Anträge"; $("pageSub").textContent = "Status deiner Urlaubsanträge und Formulare."; $("openSub").textContent = "Noch nicht entschieden"; $("filter").value = "all"; }
     notice("Angemeldet: " + c.name + " · " + (ROLE_LABEL[c.role] || c.role) + (c.role === "manager" && !c.profile.teamId ? " · Hinweis: Dir ist keine Team-ID zugeordnet, daher siehst du nur eigene Anträge." : ""));
     watchApprovals(c, list => {

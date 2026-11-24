@@ -7,11 +7,15 @@
  * 3) Eingereichter Nachweis/Formular (nachweise/{uid}/{id}, Status "eingereicht")
  *                                                   -> legt automatisch einen Antrag in approvals/ an
  *
- * Zuständig ist: Manager mit gleicher teamId  ->  sonst FALLBACK_APPROVER_EMAILS  ->  sonst alle Admins.
+ * 4) Empfängerliste (approvers/{uid}) für die Auswahl „Senden an“ wird aus roles/users gepflegt
+ *
+ * Zuständig ist: der im Formular gewählte Empfänger (assigneeUid)
+ *   -> sonst Manager mit gleicher teamId  ->  sonst FALLBACK_APPROVER_EMAILS  ->  sonst alle Admins.
  * Die E-Mail enthält nur einen Link ins Portal. Entschieden wird ausschließlich im Portal (nach Login).
  */
 const { onValueCreated, onValueUpdated, onValueWritten } = require("firebase-functions/v2/database");
 const { defineSecret, defineString } = require("firebase-functions/params");
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const admin = require("firebase-admin");
 const nodemailer = require("nodemailer");
@@ -124,6 +128,12 @@ async function findApprovers(approval) {
   const emails = new Set();
   let via = "";
 
+  if (approval.assigneeUid && approval.assigneeUid !== requester) {
+    const e = await emailOf(approval.assigneeUid);
+    if (e) return { emails: [e], via: "gewählter Empfänger" };
+    logger.warn("Gewählter Empfänger ohne E-Mail-Adresse: " + approval.assigneeUid);
+  }
+
   if (approval.teamId) {
     const snap = await db.ref("users").orderByChild("teamId").equalTo(approval.teamId).get();
     const managers = Object.keys(snap.val() || {}).filter((u) => u !== requester && roles[u] === "manager");
@@ -159,13 +169,15 @@ exports.antragNeu = onValueCreated({ ...OPTS, ref: "/approvals/{id}" }, async (e
     }
     const html = layout(
       "Neuer Antrag zur Genehmigung",
-      `<strong>${esc(a.person || "Ein Mitarbeiter")}</strong> hat einen Antrag eingereicht, der auf deine Entscheidung wartet.`,
+      a.assigneeUid
+        ? `<strong>${esc(a.person || "Ein Mitarbeiter")}</strong> hat dir ein Formular bzw. einen Antrag zur Genehmigung gesendet. Er liegt jetzt in deinem Konto unter „Anträge &amp; Genehmigungen“.`
+        : `<strong>${esc(a.person || "Ein Mitarbeiter")}</strong> hat einen Antrag eingereicht, der auf deine Entscheidung wartet.`,
       describe(a),
       "Antrag prüfen",
       `${baseUrl()}/pages/personal/genehmigungen.html?id=${encodeURIComponent(id)}`,
       "Bitte melde dich im Portal an und genehmige oder lehne den Antrag dort ab. Bei einer Ablehnung ist eine Begründung erforderlich. Diese E-Mail enthält bewusst keine Entscheidungsfunktion."
     );
-    await sendMail(emails, `[VE-Log] Genehmigung erforderlich: ${a.type || "Antrag"} – ${a.person || ""}`.trim(), html);
+    await sendMail(emails, `[VE-Log] ${a.type === "Formular" ? "Neues Formular" : "Neuer Antrag"} von ${a.person || "Mitarbeiter"}: ${a.title || a.type || ""}`.trim(), html);
     await mailRef.update({ managerNotifiedAt: admin.database.ServerValue.TIMESTAMP, recipients: emails.length, via });
   } catch (e) {
     logger.error("Mail an Genehmiger fehlgeschlagen", e);
@@ -239,5 +251,50 @@ exports.formularZurGenehmigung = onValueWritten({ ...OPTS, ref: "/nachweise/{uid
     details: { formular, datum: after.datum || "" },
   };
   if (profile.teamId) record.teamId = profile.teamId;
-  await ref.set(record); // löst antragNeu aus -> E-Mail an Manager
+  if (after.empfaengerUid) {
+    record.assigneeUid = String(after.empfaengerUid).slice(0, 128);
+    record.assigneeName = String(after.empfaengerName || "").slice(0, 120);
+  }
+  await ref.set(record); // löst antragNeu aus -> E-Mail an den gewählten Empfänger
+});
+
+// ---- 4) Empfängerliste für die Auswahl „Senden an“ ----
+// Alle Benutzer mit Rolle "manager" (z. B. die Bauleiter) erscheinen in der Auswahl.
+// Optional: users/{uid}/funktion (z. B. "Bauleiter") wird hinter dem Namen angezeigt.
+async function approverEntry(uid, roles) {
+  const db = admin.database();
+  const role = roles ? roles[uid] : (await db.ref("roles/" + uid).get()).val();
+  if (role !== "manager") return null;
+  const profile = (await db.ref("users/" + uid).get()).val() || {};
+  let name = [profile.vorname, profile.nachname].filter(Boolean).join(" ").trim();
+  if (!name) name = profile.benutzername || (await emailOf(uid)) || "Manager";
+  const entry = { name: String(name).slice(0, 80) };
+  if (profile.funktion) entry.funktion = String(profile.funktion).slice(0, 40);
+  return entry;
+}
+
+async function refreshApprover(uid) {
+  const ref = admin.database().ref("approvers/" + uid);
+  const entry = await approverEntry(uid);
+  if (entry) await ref.set(entry); else await ref.remove();
+}
+
+exports.empfaengerRolle = onValueWritten({ region: OPTS.region, instance: OPTS.instance, ref: "/roles/{uid}" },
+  (event) => refreshApprover(event.params.uid));
+exports.empfaengerProfil = onValueWritten({ region: OPTS.region, instance: OPTS.instance, ref: "/users/{uid}" },
+  (event) => refreshApprover(event.params.uid));
+
+// Einmalig bzw. bei Bedarf: komplette Liste neu aufbauen (Button für Admins auf der Genehmigungsseite).
+exports.rebuildApprovers = onCall({ region: OPTS.region }, async (request) => {
+  if (!request.auth) throw new HttpsError("unauthenticated", "Bitte anmelden.");
+  const db = admin.database();
+  const roles = (await db.ref("roles").get()).val() || {};
+  if (!["admin", "superadmin"].includes(roles[request.auth.uid])) throw new HttpsError("permission-denied", "Nur für Administratoren.");
+  const list = {};
+  for (const uid of Object.keys(roles)) {
+    const entry = await approverEntry(uid, roles);
+    if (entry) list[uid] = entry;
+  }
+  await db.ref("approvers").set(Object.keys(list).length ? list : null);
+  return { count: Object.keys(list).length };
 });

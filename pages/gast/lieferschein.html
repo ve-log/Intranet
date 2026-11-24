@@ -170,13 +170,10 @@
         <div class="sign"><label for="ausgeber">VE-Log GmbH</label><canvas id="ausgeber" width="800" height="240"></canvas><input type="hidden" id="signatureValueAusgeber" name="ausgeber"><div class="signature-buttons"><button type="button" data-signature-pad="ausgeber" onclick="clearCanvas('ausgeber')">Löschen</button><button type="button" data-signature-pad="ausgeber" onclick="uploadSignature('ausgeber')">Bild hochladen</button><button type="button" onclick="saveSignaturePNG('ausgeber')">PNG herunterladen</button></div><input id="upload-ausgeber" type="file" accept="image/png,image/jpeg,image/webp" hidden onchange="loadSignature(this,'ausgeber')"></div><div class="sign"><label for="empfaengerSignatur">Empfänger</label><canvas id="empfaengerSignatur" width="800" height="240"></canvas><input type="hidden" id="signatureValueEmpfaenger" name="empfaengerSignatur"><div class="signature-buttons"><button type="button" data-signature-pad="empfaengerSignatur" onclick="clearCanvas('empfaengerSignatur')">Löschen</button><button type="button" data-signature-pad="empfaengerSignatur" onclick="uploadSignature('empfaengerSignatur')">Bild hochladen</button><button type="button" onclick="saveSignaturePNG('empfaengerSignatur')">PNG herunterladen</button></div><input id="upload-empfaengerSignatur" type="file" accept="image/png,image/jpeg,image/webp" hidden onchange="loadSignature(this,'empfaengerSignatur')"></div></div>
 
       <p id="signatureStatus" class="status" role="status">Hier mit Maus oder Finger unterschreiben oder ein Unterschriftsbild hochladen. Danach den Lieferschein speichern.</p><div class="actions">
-        <button id="saveNachweis" type="button" class="save-btn" disabled>
-          💾 Liefer-/Empfangsschein speichern
-        </button>
+        <button id="saveNachweis" type="button" class="save-btn" disabled>💾 Speichern</button>
+    <button class="nav-btn" id="sendNachweis" type="button">📨 Senden</button>
 
-        <button class="nav-btn" type="button" onclick="window.print()">
-          🖨 Drucken / PDF
-        </button>
+        <button class="nav-btn" type="button" onclick="window.print()">🖨 Drucken</button>
 
         <a class="new-record" href="../formulare/lieferschein.html">
           + Neuer Nachweis
@@ -640,5 +637,6 @@ start().catch(error => {
 
   console.error('VE-Log Speicherfunktion:', error);
 });
-</script></body>
+</script><script type="module" src="../../assets/js/einreichen.js"></script>
+</body>
 </html>

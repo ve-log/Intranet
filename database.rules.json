@@ -109,6 +109,16 @@
           },
           "id": {
             ".validate": "newData.isString() && newData.val() == $nachweisId"
+          },
+          ".read": "auth != null && root.child('roles').child(auth.uid).val() != 'gast' && data.child('empfaengerUid').val() == auth.uid && data.child('status').val() == 'eingereicht'",
+          "empfaengerUid": {
+            ".validate": "newData.isString() && root.child('approvers').child(newData.val()).exists()"
+          },
+          "empfaengerName": {
+            ".validate": "newData.isString() && newData.val().length <= 120"
+          },
+          "einreichtAt": {
+            ".validate": "newData.isNumber() && newData.val() <= now"
           }
         }
       }
@@ -190,12 +200,13 @@
       ".indexOn": [
         "createdBy",
         "teamId",
-        "status"
+        "status",
+        "assigneeUid"
       ],
-      ".read": "auth != null && ((root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin') || (root.child('roles').child(auth.uid).val() == 'manager' && root.child('users').child(auth.uid).child('teamId').isString() && root.child('users').child(auth.uid).child('teamId').val() != '' && query.orderByChild == 'teamId' && query.equalTo == root.child('users').child(auth.uid).child('teamId').val()) || ((root.child('roles').child(auth.uid).val() == 'mitarbeiter' || root.child('roles').child(auth.uid).val() == 'manager' || root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin') && query.orderByChild == 'createdBy' && query.equalTo == auth.uid))",
+      ".read": "auth != null && ((root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin') || (root.child('roles').child(auth.uid).val() == 'manager' && root.child('users').child(auth.uid).child('teamId').isString() && root.child('users').child(auth.uid).child('teamId').val() != '' && query.orderByChild == 'teamId' && query.equalTo == root.child('users').child(auth.uid).child('teamId').val()) || ((root.child('roles').child(auth.uid).val() == 'mitarbeiter' || root.child('roles').child(auth.uid).val() == 'manager' || root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin') && query.orderByChild == 'createdBy' && query.equalTo == auth.uid) || (root.child('roles').child(auth.uid).val() == 'manager' && query.orderByChild == 'assigneeUid' && query.equalTo == auth.uid))",
       "$id": {
-        ".read": "auth != null && ((root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin') || data.child('createdBy').val() == auth.uid || (root.child('roles').child(auth.uid).val() == 'manager' && root.child('users').child(auth.uid).child('teamId').isString() && root.child('users').child(auth.uid).child('teamId').val() != '' && data.child('teamId').val() == root.child('users').child(auth.uid).child('teamId').val()))",
-        ".write": "auth != null && ((!data.exists() && newData.exists() && (root.child('roles').child(auth.uid).val() == 'mitarbeiter' || root.child('roles').child(auth.uid).val() == 'manager' || root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin') && newData.child('createdBy').val() == auth.uid && newData.child('status').val() == 'open' && !newData.child('decision').exists() && ((!root.child('users').child(auth.uid).child('teamId').exists() && !newData.child('teamId').exists()) || newData.child('teamId').val() == root.child('users').child(auth.uid).child('teamId').val())) || (data.exists() && newData.exists() && ((root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin') || (root.child('roles').child(auth.uid).val() == 'manager' && root.child('users').child(auth.uid).child('teamId').isString() && root.child('users').child(auth.uid).child('teamId').val() != '' && data.child('teamId').val() == root.child('users').child(auth.uid).child('teamId').val())) && (data.child('createdBy').val() != auth.uid || root.child('roles').child(auth.uid).val() == 'superadmin') && newData.child('createdBy').val() == data.child('createdBy').val() && newData.child('title').val() == data.child('title').val() && newData.child('type').val() == data.child('type').val() && newData.child('person').val() == data.child('person').val() && newData.child('teamId').val() == data.child('teamId').val() && (data.child('status').val() == 'open' || (root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')) && (newData.child('status').val() == 'open' || newData.child('decision/byUid').val() == auth.uid) && (newData.child('status').val() != 'rejected' || (newData.child('decision/reason').isString() && newData.child('decision/reason').val().length > 0))) || (data.exists() && newData.exists() && data.child('createdBy').val() == auth.uid && data.child('status').val() == 'open' && newData.child('status').val() == 'withdrawn' && newData.child('createdBy').val() == data.child('createdBy').val() && newData.child('title').val() == data.child('title').val() && newData.child('type').val() == data.child('type').val() && newData.child('person').val() == data.child('person').val() && newData.child('teamId').val() == data.child('teamId').val()))",
+        ".read": "auth != null && ((root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin') || data.child('createdBy').val() == auth.uid || (root.child('roles').child(auth.uid).val() == 'manager' && root.child('users').child(auth.uid).child('teamId').isString() && root.child('users').child(auth.uid).child('teamId').val() != '' && data.child('teamId').val() == root.child('users').child(auth.uid).child('teamId').val()) || data.child('assigneeUid').val() == auth.uid)",
+        ".write": "auth != null && ((!data.exists() && newData.exists() && (root.child('roles').child(auth.uid).val() == 'mitarbeiter' || root.child('roles').child(auth.uid).val() == 'manager' || root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin') && newData.child('createdBy').val() == auth.uid && newData.child('status').val() == 'open' && !newData.child('decision').exists() && (!newData.child('assigneeUid').exists() || root.child('approvers').child(newData.child('assigneeUid').val()).exists()) && ((!root.child('users').child(auth.uid).child('teamId').exists() && !newData.child('teamId').exists()) || newData.child('teamId').val() == root.child('users').child(auth.uid).child('teamId').val())) || (data.exists() && newData.exists() && ((root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin') || (root.child('roles').child(auth.uid).val() == 'manager' && ((data.child('assigneeUid').exists() && data.child('assigneeUid').val() == auth.uid) || (!data.child('assigneeUid').exists() && root.child('users').child(auth.uid).child('teamId').isString() && root.child('users').child(auth.uid).child('teamId').val() != '' && data.child('teamId').val() == root.child('users').child(auth.uid).child('teamId').val())))) && (data.child('createdBy').val() != auth.uid || root.child('roles').child(auth.uid).val() == 'superadmin') && newData.child('createdBy').val() == data.child('createdBy').val() && newData.child('title').val() == data.child('title').val() && newData.child('type').val() == data.child('type').val() && newData.child('person').val() == data.child('person').val() && newData.child('teamId').val() == data.child('teamId').val() && newData.child('assigneeUid').val() == data.child('assigneeUid').val() && (data.child('status').val() == 'open' || (root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')) && (newData.child('status').val() == 'open' || newData.child('decision/byUid').val() == auth.uid) && (newData.child('status').val() != 'rejected' || (newData.child('decision/reason').isString() && newData.child('decision/reason').val().length > 0))) || (data.exists() && newData.exists() && data.child('createdBy').val() == auth.uid && data.child('status').val() == 'open' && newData.child('status').val() == 'withdrawn' && newData.child('createdBy').val() == data.child('createdBy').val() && newData.child('title').val() == data.child('title').val() && newData.child('type').val() == data.child('type').val() && newData.child('person').val() == data.child('person').val() && newData.child('teamId').val() == data.child('teamId').val() && newData.child('assigneeUid').val() == data.child('assigneeUid').val()))",
         ".validate": "newData.hasChildren(['id','type','title','person','status','createdBy','createdAt'])",
         "id": {
           ".validate": "newData.isString() && newData.val() == $id"
@@ -295,6 +306,12 @@
         },
         "$other": {
           ".validate": false
+        },
+        "assigneeUid": {
+          ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 128"
+        },
+        "assigneeName": {
+          ".validate": "newData.isString() && newData.val().length <= 120"
         }
       }
     },
@@ -331,6 +348,22 @@
           "$other": {
             ".validate": false
           }
+        }
+      }
+    },
+    "approvers": {
+      ".read": "auth != null && (root.child('roles').child(auth.uid).val() == 'mitarbeiter' || root.child('roles').child(auth.uid).val() == 'manager' || root.child('roles').child(auth.uid).val() == 'admin' || root.child('roles').child(auth.uid).val() == 'superadmin')",
+      ".write": false,
+      "$uid": {
+        ".validate": "newData.hasChild('name')",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length <= 80"
+        },
+        "funktion": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "$other": {
+          ".validate": false
         }
       }
     }

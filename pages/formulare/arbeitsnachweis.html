@@ -341,15 +341,9 @@
         <textarea id="bemerkungen" name="bemerkungen" rows="5">
         </textarea>
         <div class="actions">
-          <button id="saveNachweis" type="button" class="save-btn" disabled>
-            💾 Nachweis &amp; PDF speichern
-          </button>
-          <a class="nav-btn" href="nachweise.html">
-            ▣ Meine Nachweise / PDF senden
-          </a>
-          <button id="printNachweis" class="nav-btn" type="button">
-            🖨 Drucken / PDF
-          </button>
+          <button id="saveNachweis" type="button" class="save-btn" disabled>💾 Speichern</button>
+          <button id="sendNachweis" class="nav-btn" type="button">📨 Senden</button>
+          <button id="printNachweis" class="nav-btn" type="button">🖨 Drucken</button>
           <a class="new-record" href="arbeitsnachweis.html?new=1">
             + Neuer Nachweis
           </a>
@@ -369,5 +363,6 @@
         window.print();
       });
     </script>
-  </body>
+  <script type="module" src="../../assets/js/einreichen.js"></script>
+</body>
 </html>

@@ -319,17 +319,14 @@
           type="button"
           class="save-btn"
           disabled
-        >
-          💾 Leistungsnachweis speichern
-        </button>
+        >💾 Speichern</button>
+    <button class="nav-btn" id="sendNachweis" type="button">📨 Senden</button>
 
         <button
           class="nav-btn"
           type="button"
           onclick="window.print()"
-        >
-          🖨 Drucken / PDF
-        </button>
+        >🖨 Drucken</button>
 
         <a class="new-record" href="leistungsnachweis.html">
           + Neuer Nachweis
@@ -564,5 +561,6 @@ start().catch(error=>{
 })();
 
 </script>
+<script type="module" src="../../assets/js/einreichen.js"></script>
 </body>
 </html>

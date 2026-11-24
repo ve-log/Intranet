@@ -506,6 +506,11 @@
     </div>
 
 
+    <div class="einreich-empfaenger" id="empfaengerBox" hidden>
+        <label for="empfaengerSelect">Zur Genehmigung senden an</label>
+        <select id="empfaengerSelect"></select>
+    </div>
+
     <div class="einreich-status" id="einreichStatus" role="status" aria-live="polite" hidden></div>
 
     <div class="hinweis">
@@ -1142,7 +1147,7 @@ window.addEventListener(
 
 
 <script type="module">
-import {init, submitApproval, workdays, niceDate} from "../../assets/js/approvals.js";
+import {init, submitApproval, workdays, niceDate, loadApprovers, fillApproverSelect} from "../../assets/js/approvals.js";
 const $ = id => document.getElementById(id);
 const btn = $("btnEinreichen"), box = $("einreichStatus");
 let ctx = null;
@@ -1153,7 +1158,10 @@ function show(msg, type, linkText) {
 init({
   redirect: false,
   onDenied: msg => show(msg + " Zum Einreichen musst du angemeldet sein.", "warn"),
-  onReady: c => { ctx = c; btn.disabled = false; }
+  onReady: async c => {
+    ctx = c; btn.disabled = false;
+    try { if (fillApproverSelect($("empfaengerSelect"), await loadApprovers(c))) $("empfaengerBox").hidden = false; } catch (e) { /* ohne Auswahl: Team-Manager */ }
+  }
 });
 btn.addEventListener("click", async () => {
   if (!ctx) return;
@@ -1163,11 +1171,14 @@ btn.addEventListener("click", async () => {
   const manual = parseFloat($("urlaubTage").value);
   const tage = Number.isFinite(manual) && manual > 0 ? manual : workdays(von, bis);
   const title = "Urlaub " + niceDate(von) + (bis !== von ? " – " + niceDate(bis) : "") + " (" + String(tage).replace(".", ",") + " " + (tage === 1 ? "Tag" : "Tage") + ")";
-  if (!confirm("Urlaubsantrag jetzt an deinen Vorgesetzten senden?\n\n" + title)) return;
+  const sel = $("empfaengerSelect"), hasList = !$("empfaengerBox").hidden;
+  if (hasList && !sel.value) { show("Bitte auswählen, an wen der Antrag gesendet werden soll.", "error"); sel.focus(); return; }
+  const assignee = hasList ? {uid: sel.value, name: sel.selectedOptions[0].dataset.name} : null;
+  if (!confirm("Urlaubsantrag jetzt senden" + (assignee ? " an " + assignee.name : " an deinen Vorgesetzten") + "?\n\n" + title)) return;
   btn.disabled = true; show("Wird eingereicht …");
   try {
-    await submitApproval(ctx, {type: "Urlaub", title, details: {von, bis, tage: String(tage), vertretung}});
-    show("✅ Antrag eingereicht. Dein Vorgesetzter wurde per E-Mail informiert. Die Entscheidung siehst du unter", "ok", "Meine Anträge");
+    await submitApproval(ctx, {type: "Urlaub", title, details: {von, bis, tage: String(tage), vertretung}, assignee});
+    show("✅ Antrag eingereicht. Der Empfänger wurde per E-Mail informiert. Die Entscheidung siehst du unter", "ok", "Meine Anträge");
   } catch (e) {
     btn.disabled = false;
     show("Antrag konnte nicht eingereicht werden: " + e.message, "error");

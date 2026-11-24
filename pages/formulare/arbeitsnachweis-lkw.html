@@ -307,13 +307,10 @@
       </div>
 
       <div class="actions">
-        <button id="saveNachweis" type="button" class="save-btn" disabled>
-          💾 Arbeitsnachweis LKW speichern
-        </button>
+        <button id="saveNachweis" type="button" class="save-btn" disabled>💾 Speichern</button>
+    <button class="nav-btn" id="sendNachweis" type="button">📨 Senden</button>
 
-        <button class="nav-btn" type="button" onclick="window.print()">
-          🖨 Drucken / PDF
-        </button>
+        <button class="nav-btn" type="button" onclick="window.print()">🖨 Drucken</button>
 
         <a class="new-record" href="arbeitsnachweis-lkw.html?new=1">
           + Neuer Nachweis
@@ -332,5 +329,6 @@
   </div>
 
   <script type="module" src="../../assets/js/nachweise-formular.js?v=6"></script>
+<script type="module" src="../../assets/js/einreichen.js"></script>
 </body>
 </html>

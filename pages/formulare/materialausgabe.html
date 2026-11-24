@@ -350,15 +350,8 @@
 <div class="buttons">
 
 
-    <button type="button" class="save" id="saveNachweis" disabled>💾 In Meine Nachweise speichern</button>
-
-
-    <button type="button" class="list-btn" onclick="window.location.href='nachweise.html'">▣ Meine Nachweise</button>
-
-
-    <button type="button" class="pdf" onclick="window.print()">
-        📄 PDF
-    </button>
+    <button type="button" class="save" id="saveNachweis" disabled>💾 Speichern</button>
+    <button type="button" class="list-btn" id="sendNachweis">📨 Senden</button>
 
 
     <button type="button" class="print" onclick="window.print()">
@@ -830,6 +823,7 @@ start().catch(error => {
   console.error('VE-Log Speicherfunktion:', error);
 });
 
-</script></body>
+</script><script type="module" src="../../assets/js/einreichen.js"></script>
+</body>
 
 </html>
