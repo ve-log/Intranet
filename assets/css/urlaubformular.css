@@ -490,3 +490,42 @@ body {
         border: 1px solid #555 !important;
     }
 }
+
+
+/* =========================
+   ZUR GENEHMIGUNG EINREICHEN
+========================= */
+
+.btn-einreichen {
+    background: #8e2f2b;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 18px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-einreichen:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.einreich-status {
+    margin: 14px 0;
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #eef0f3;
+    color: #232735;
+}
+
+.einreich-status.ok { background: #edf5ee; color: #356342; }
+.einreich-status.error { background: #fbeceb; color: #a43d38; }
+.einreich-status.warn { background: #fff6e5; color: #8a6420; }
+.einreich-status a { color: inherit; font-weight: bold; }
+
+@media print {
+    .btn-einreichen, .einreich-status { display: none !important; }
+}

@@ -57,3 +57,11 @@ Diese Seiten werden verlinkt, existieren aber noch nicht (führen zur 404-Seite)
 - Alle Konten außer Gast haben Zugriff (mitarbeiter, manager, admin, superadmin). Gäste sehen nur „Kein Zugriff“.
 - Arbeitszeiten = bestehende Zeiterfassung, jetzt in allen Mitarbeiter-Menüs und im Dashboard verlinkt.
 - Neue Firebase-Regeln für `hrManagement` (siehe `docs/firebase-database-rules.json`): Mitarbeiter lesen nur eigene Einträge, dürfen nur eigene Krankmeldungen mit Status „Gemeldet“ anlegen. Bearbeiten und Löschen sowie alle Schulungen nur Admin/Superadmin.
+
+## Genehmigungs-Workflow mit E-Mail (Urlaub und Formulare)
+- Neu: Cloud Functions in `functions/` (E-Mail an Manager bei neuem Antrag, E-Mail an Mitarbeiter bei Entscheidung, automatische Anträge für eingereichte Formulare).
+- Neu: `assets/js/approvals.js`, Seite `pages/personal/genehmigungen.html` komplett neu (echte Datenbank statt Demo, Begründungspflicht bei Ablehnung, Direktlink `?id=`, PDF-Ansicht für Formulare, Protokoll für Admins).
+- Neu: `urlaubformular.html` mit Button „Zur Genehmigung einreichen“; `urlaub.html` mit Links „Meine Anträge“ und „Urlaub beantragen“; Dashboard-Kachel „Anträge & Genehmigungen“.
+- Neu: Firebase-Regeln für `approvals` und `approvalAudit`; Manager dürfen Formulare ihres Teams lesen (`database.rules.json`, Kopie in `docs/firebase-database-rules.json`).
+- `index.html`: Nach dem Login Rücksprung zur ursprünglichen Seite (Links aus E-Mails).
+- Einrichtung: siehe `docs/GENEHMIGUNG-EMAIL-SETUP.md`. **Regeln und Functions müssen veröffentlicht werden, sonst funktioniert der Ablauf nicht.**
