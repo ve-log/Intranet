@@ -60,6 +60,11 @@ bereitgestellt. Jede Seite bindet diese Datei ein. Ein Projektwechsel erfordert 
 3. Pfade zu Bildern, CSS und JS beginnen in `pages/<ordner>/` immer mit `../../`.
 4. Seite in der Navigation der anderen Seiten verlinken.
 
+## Genehmigungen und E-Mail
+
+Urlaubsanträge und Formulare werden per E-Mail an den Manager gemeldet und im Portal genehmigt oder abgelehnt
+(mit Begründung). Einrichtung: `docs/GENEHMIGUNG-EMAIL-SETUP.md`. Code für den Mailversand: `functions/`.
+
 ## Sicherheit
 
 Die Rollenprüfung im Browser ist nur eine Komfortfunktion. Der eigentliche Schutz der Daten

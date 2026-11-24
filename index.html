@@ -108,6 +108,16 @@ resetLink.addEventListener("click", async (event) => {
   }
 });
 
+// Direktlinks (z. B. aus Genehmigungs-E-Mails): nach dem Login zur ursprünglichen Seite zurück.
+function zielNachLogin(role) {
+  try {
+    const r = sessionStorage.getItem("velog:returnTo");
+    sessionStorage.removeItem("velog:returnTo");
+    if (r && role !== "gast" && /^\/[^\/\\]/.test(r) && r.includes("/pages/") && !r.includes("..")) return r;
+  } catch (e) { /* egal */ }
+  return destinations[role];
+}
+
 async function login(event, requireGuest=false) {
   event.preventDefault();
   if (busy) return;
@@ -136,7 +146,7 @@ async function login(event, requireGuest=false) {
     }
 
     showStatus("Anmeldung erfolgreich. Weiterleitung ...", "success");
-    window.location.replace(destinations[role]);
+    window.location.replace(zielNachLogin(role));
   } catch (error) {
     console.error("Anmeldefehler:", error);
     if (signedInUser && auth.currentUser) {
@@ -190,7 +200,7 @@ msButton.addEventListener("click", async () => {
     }
 
     showStatus("Anmeldung erfolgreich. Weiterleitung ...", "success");
-    window.location.replace(destinations[role]);
+    window.location.replace(zielNachLogin(role));
   } catch (error) {
     console.error("Microsoft-Anmeldefehler:", error);
     if (user) {

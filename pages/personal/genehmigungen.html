@@ -1,11 +1,146 @@
 <!DOCTYPE html><html lang="de"><head>
 <link rel="icon" type="image/png" href="../../assets/img/favicon.png">
 <script src="../../assets/js/firebase-config.js"></script>
-<script src="../../assets/js/access.js"></script><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>VE-Log · Genehmigungszentrale</title><link rel="stylesheet" href="../../assets/css/wartung.css"></head><body><aside class="sidebar"><a class="brand" href="../mitarbeiter/dashboard.html"><img src="../../assets/img/logo.png" alt="VE-Log" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><b hidden>VE-Log</b><small>MITARBEITERPORTAL</small></a><div class="nav-label">ARBEITSPLATZ</div><nav><a href="../mitarbeiter/dashboard.html">▦ Dashboard</a><a href="personalmanagement.html">♙ Mitarbeiter</a><a href="../formulare/formular.html">▤ Formulare</a><a href="../mitarbeiter/urlaub.html">▦ Urlaub</a><a href="../betrieb/fahrzeuge.html">▱ Fahrzeuge</a><a class="active" href="../betrieb/wartung.html">⚙ Wartung</a><a href="genehmigungen.html">✓ Genehmigungen</a><a href="../betrieb/einsatzplanung.html">▦ Einsatzplanung</a><a href="../mitarbeiter/kommunikation.html">☏ Kommunikation</a></nav><div class="side-note">Alles für deinen Arbeitsalltag.<br>Einfach an einem Ort.</div></aside><div class="shell"><header><div class="crumb">Arbeitsplatz / <strong>Genehmigungszentrale</strong></div><div class="user"><span class="avatar">VE</span><span><strong id="userEmail">Anmeldung wird geprüft</strong><br><span class="muted">Firebase-Konto</span></span></div></header><main><section class="intro"><div><div class="eyebrow">Betrieb &amp; Verwaltung</div><h1>Genehmigungszentrale</h1><p class="muted">Urlaub, Arbeitsnachweise und weitere Vorgänge zentral prüfen und entscheiden.</p></div><button class="btn primary" id="addBtn">＋ Vorgang anlegen</button></section><div class="demo" id="connectionNotice">Firebase-Verbindung wird geprüft … Es werden keine Demo-Datensätze in die Datenbank geschrieben.</div><section class="stats"><article class="stat"><div class="stat-label">Offene Vorgänge <span>◷</span></div><div class="metric" id="openMetric">—</div><div class="sub">Warten auf Entscheidung</div></article><article class="stat"><div class="stat-label">Urlaub <span>▦</span></div><div class="metric" id="leaveMetric">—</div><div class="sub">Urlaubsanträge</div></article><article class="stat"><div class="stat-label">Arbeitsnachweise <span>▤</span></div><div class="metric" id="timeMetric">—</div><div class="sub">Stunden / Nachweise</div></article><article class="stat"><div class="stat-label">Dokumente <span>▧</span></div><div class="metric" id="docMetric">—</div><div class="sub">Freigabe erforderlich</div></article></section><section class="panel"><div class="panel-head"><div><h2>Zentrale Genehmigungen</h2><p class="muted" style="font-size:12px;margin-top:4px">Alle offenen Entscheidungen in einer sortier- und filterbaren Liste.</p></div><span class="tag" id="count">0 Vorgänge</span></div><div class="toolbar"><input id="search" type="search" placeholder="Mitarbeiter, Betreff oder Vorgangsnummer suchen…" aria-label="Genehmigungen durchsuchen"><select id="filter" aria-label="Status filtern"><option value="open">Nur offen</option><option value="all">Alle Vorgänge</option><option value="approved">Genehmigt</option><option value="rejected">Abgelehnt</option></select><select id="type"><option value="all">Alle Typen</option><option>Urlaub</option><option>Arbeitsnachweis</option><option>Dokument</option><option>Überstunden</option><option>Spesen</option></select></div><div class="table-wrap"><table><thead><tr><th>Vorgang</th><th>Mitarbeiter</th><th>Typ</th><th>Eingereicht</th><th>Priorität</th><th>Status</th><th>Entscheidung</th></tr></thead><tbody id="rows"></tbody></table></div><div class="empty" id="empty" hidden>Keine Vorgänge für diese Auswahl.</div></section><section class="panel"><div class="panel-head"><div><h2>Entscheidungsprotokoll</h2><p class="muted" style="font-size:12px;margin-top:4px">Jede Entscheidung wird separat in approvalAudit gespeichert.</p></div><span class="tag">AUDIT</span></div><p class="muted" style="font-size:12px">Die Protokolleinträge werden in Firebase unter <code>approvalAudit/&lt;Vorgangs-ID&gt;/&lt;Ereignis-ID&gt;</code> gespeichert. Nur berechtigte Rollen dürfen Entscheidungen ausführen. Für eine vollständige Protokollansicht werden die passenden Leserechte in den Realtime-Database-Regeln benötigt.</p></section><section class="panel"><div class="panel-head"><h2>Hinweise für den produktiven Betrieb</h2><span class="tag">DEMO</span></div><div style="display:grid;gap:10px;font-size:12px;color:var(--muted)"><p>• Entscheidungen in dieser Demo ändern nur den lokalen Browserzustand.</p><p>• Im Echtbetrieb müssen Genehmigungen serverseitig mit Benutzer-ID, Zeitstempel und Begründung protokolliert werden.</p><p>• Sensible Personalinformationen dürfen nur berechtigte Rollen sehen.</p></div></section></main></div><dialog id="editor"><div class="dialog-head"><h2>Demo-Vorgang anlegen</h2><button class="close" type="button" data-close aria-label="Schließen">×</button></div><form id="form" class="formgrid"><label class="field">Betreff<input name="title" required maxlength="100"></label><label class="field">Mitarbeiter<input name="person" required maxlength="80"></label><label class="field">Typ<select name="type"><option>Urlaub</option><option>Arbeitsnachweis</option><option>Dokument</option><option>Überstunden</option><option>Spesen</option></select></label><label class="field">Priorität<select name="priority"><option>Normal</option><option>Hoch</option></select></label><div class="field full" style="display:flex;flex-direction:row;justify-content:flex-end;gap:8px"><button type="button" class="btn" data-close>Abbrechen</button><button type="submit" class="btn primary">Vorgang anlegen</button></div></form></dialog><script type="module">
-'use strict';const $=id=>document.getElementById(id);const firebaseConfig=window.VELOG_FIREBASE_CONFIG;;let A,D,auth,db,user=null,role=null,data=[],stopData=null,stopRole=null;const roleNames={mitarbeiter:'Mitarbeiter',manager:'Manager',admin:'Administrator',superadmin:'Superadministrator'};const canSubmit=()=>!!user;const canDecide=()=>['manager','admin','superadmin'].includes(role);
-function notice(msg,error=false){let el=$('connectionNotice');if(!el){el=document.createElement('div');el.id='connectionNotice';el.className='demo';$('main').prepend(el)}el.textContent=msg;el.style.background=error?'#fbeceb':'#edf5ee';el.style.color=error?'#a43d38':'#356342'}
-function render(){const q=$('search').value.toLocaleLowerCase('de-DE'),f=$('filter').value,t=$('type').value;const list=data.filter(v=>[v.id,v.title,v.person].join(' ').toLocaleLowerCase('de-DE').includes(q)&&(f==='all'||(f==='open'?v.status==='open':v.status===f))&&(t==='all'||v.type===t));$('rows').replaceChildren();list.forEach(v=>{const tr=document.createElement('tr');[v.id,v.person,v.type,v.dateLabel||new Intl.DateTimeFormat('de-DE').format(new Date(v.createdAt||Date.now()))].forEach(s=>{const td=document.createElement('td');td.textContent=s||'—';tr.append(td)});const p=document.createElement('td'),pb=document.createElement('span');pb.className='status '+(v.priority==='Hoch'?'bad':'neutral');pb.textContent=v.priority||'Normal';p.append(pb);tr.append(p);const st=document.createElement('td'),sb=document.createElement('span');sb.className='status '+(v.status==='approved'?'ok':v.status==='rejected'?'bad':'warn');sb.textContent=v.status==='approved'?'Genehmigt':v.status==='rejected'?'Abgelehnt':'Offen';st.append(sb);tr.append(st);const a=document.createElement('td'),wrap=document.createElement('div');wrap.className='row-actions';if(v.status==='open'&&canDecide()){[['Genehmigen','approved'],['Ablehnen','rejected']].forEach(([label,status])=>{const b=document.createElement('button');b.className='mini '+(status==='approved'?'primary':'');b.textContent=label;b.onclick=()=>decide(v,status);wrap.append(b)})}else if(v.status!=='open'&&canDecide()){const b=document.createElement('button');b.className='mini';b.textContent='Wieder öffnen';b.onclick=()=>decide(v,'open');wrap.append(b)}else wrap.textContent=v.status==='open'?'Wartet auf berechtigte Entscheidung':'Nur Lesezugriff';a.append(wrap);tr.append(a);$('rows').append(tr)});$('empty').hidden=list.length>0;$('count').textContent=list.length+' Vorgänge';$('openMetric').textContent=data.filter(v=>v.status==='open').length;$('leaveMetric').textContent=data.filter(v=>v.status==='open'&&v.type==='Urlaub').length;$('timeMetric').textContent=data.filter(v=>v.status==='open'&&v.type==='Arbeitsnachweis').length;$('docMetric').textContent=data.filter(v=>v.status==='open'&&v.type==='Dokument').length}
-async function decide(v,status){if(!canDecide()||!user)return alert('Deine Rolle darf keine Entscheidung treffen.');const reason=prompt(status==='approved'?'Optionale Begründung zur Genehmigung:':'Bitte Ablehnungsgrund dokumentieren:','');if(reason===null)return;if(status==='rejected'&&!reason.trim())return alert('Für eine Ablehnung ist ein Grund erforderlich.');if(!confirm('Entscheidung '+(status==='approved'?'genehmigen':status==='rejected'?'ablehnen':'wieder öffnen')+' und im Protokoll festhalten?'))return;const updates={};const now=D.serverTimestamp();updates['approvals/'+v.id+'/status']=status;updates['approvals/'+v.id+'/updatedAt']=now;updates['approvals/'+v.id+'/updatedBy']=user.uid;const auditId=D.push(D.ref(db,'approvalAudit/'+v.id)).key;updates['approvalAudit/'+v.id+'/'+auditId]={requestId:v.id,fromStatus:v.status,toStatus:status,actorUid:user.uid,actorEmail:user.email||'',actorRole:role,reason:reason.trim(),timestamp:now};try{await D.update(D.ref(db),updates);notice('Entscheidung gespeichert und protokolliert.')}catch(e){notice('Entscheidung nicht gespeichert. Datenbankregeln prüfen: '+e.message,true)}}
-function open(){if(!canSubmit())return alert('Bitte anmelden.');$('form').reset();$('editor').showModal()}$('addBtn').onclick=open;document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$('editor').close());$('form').onsubmit=async e=>{e.preventDefault();if(!user)return;const v=Object.fromEntries(new FormData(e.currentTarget));const id=D.push(D.ref(db,'approvals')).key;const item={id,...v,dateLabel:new Intl.DateTimeFormat('de-DE').format(new Date()),status:'open',createdAt:D.serverTimestamp(),createdBy:user.uid,createdByEmail:user.email||'',updatedAt:D.serverTimestamp(),updatedBy:user.uid};try{await D.set(D.ref(db,'approvals/'+id),item);$('editor').close();notice('Antrag dauerhaft in Firebase gespeichert.')}catch(err){notice('Antrag nicht gespeichert: '+err.message,true)}};['search','filter','type'].forEach(id=>$(id).addEventListener(id==='search'?'input':'change',render));
-async function start(){try{const [app,authSDK,dbSDK]=await Promise.all([import('https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js')]);A=authSDK;D=dbSDK;const appInstance=app.getApps().length?app.getApp():app.initializeApp(firebaseConfig);auth=A.getAuth(appInstance);db=D.getDatabase(appInstance);A.onAuthStateChanged(auth,u=>{user=u;role=null;if(stopRole)stopRole();if(stopData)stopData();data=[];render();$('addBtn').hidden=!u;if(!u){notice('Bitte über VE-Log anmelden. Ohne Anmeldung kein Datenzugriff.',true);return}stopRole=D.onValue(D.ref(db,'roles/'+u.uid),snap=>{role=snap.val();$('addBtn').hidden=!user;notice('Angemeldet: '+(u.email||u.uid)+' · Rolle: '+(roleNames[role]||'Keine gültige Rolle'));render()},()=>notice('Rolle nicht lesbar – Zugriff gesperrt.',true));stopData=D.onValue(D.ref(db,'approvals'),snap=>{data=Object.entries(snap.val()||{}).map(([id,v])=>({...v,id})).filter(v=>v.title&&v.status);render()},err=>{data=[];render();notice('Firebase-Zugriff verweigert. Datenbankregeln prüfen: '+err.message,true)});})}catch(e){notice('Firebase konnte nicht initialisiert werden: '+e.message,true)}}start();
+<script src="../../assets/js/access.js"></script><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>VE-Log · Anträge &amp; Genehmigungen</title><link rel="stylesheet" href="../../assets/css/wartung.css"><link rel="stylesheet" href="../../assets/css/genehmigungen.css"></head><body><aside class="sidebar"><a class="brand" href="../mitarbeiter/dashboard.html"><img src="../../assets/img/logo.png" alt="VE-Log" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><b hidden>VE-Log</b><small>MITARBEITERPORTAL</small></a><div class="nav-label">ARBEITSPLATZ</div><nav><a href="../mitarbeiter/dashboard.html">▦ Dashboard</a><a href="personalmanagement.html">♙ Mitarbeiter</a><a href="../formulare/formular.html">▤ Formulare</a><a href="../mitarbeiter/urlaub.html">▦ Urlaub</a><a href="../betrieb/fahrzeuge.html">▱ Fahrzeuge</a><a href="../betrieb/wartung.html">⚙ Wartung</a><a class="active" href="genehmigungen.html">✓ Genehmigungen</a><a href="../betrieb/einsatzplanung.html">▦ Einsatzplanung</a><a href="../mitarbeiter/kommunikation.html">☏ Kommunikation</a></nav><div class="side-note">Alles für deinen Arbeitsalltag.<br>Einfach an einem Ort.</div></aside><div class="shell"><header><div class="crumb">Arbeitsplatz / <strong>Anträge &amp; Genehmigungen</strong></div><div class="user"><span class="avatar">VE</span><span><strong id="userEmail">Anmeldung wird geprüft</strong><br><span class="muted">Firebase-Konto</span></span></div></header><main id="main">
+<section class="intro"><div><div class="eyebrow">Betrieb &amp; Verwaltung</div><h1 id="pageTitle">Anträge &amp; Genehmigungen</h1><p class="muted" id="pageSub">Urlaub und Formulare prüfen und entscheiden.</p></div><a class="btn primary" href="../mitarbeiter/urlaubformular.html">＋ Urlaub beantragen</a></section>
+<div class="demo" id="connectionNotice">Verbindung wird geprüft …</div>
+<section class="stats">
+<article class="stat"><div class="stat-label">Offen <span>◷</span></div><div class="metric" id="openMetric">—</div><div class="sub" id="openSub">Warten auf Entscheidung</div></article>
+<article class="stat"><div class="stat-label">Urlaub <span>▦</span></div><div class="metric" id="leaveMetric">—</div><div class="sub">Offene Urlaubsanträge</div></article>
+<article class="stat"><div class="stat-label">Formulare <span>▤</span></div><div class="metric" id="formMetric">—</div><div class="sub">Offene Formulare</div></article>
+<article class="stat"><div class="stat-label">Entschieden <span>✓</span></div><div class="metric" id="doneMetric">—</div><div class="sub">Genehmigt oder abgelehnt</div></article>
+</section>
+<section class="panel"><div class="panel-head"><div><h2>Vorgänge</h2><p class="muted" style="font-size:12px;margin-top:4px" id="panelSub">Alle für dich sichtbaren Anträge.</p></div><span class="tag" id="count">0 Vorgänge</span></div>
+<div class="toolbar"><input id="search" type="search" placeholder="Mitarbeiter oder Betreff suchen…" aria-label="Suchen">
+<select id="filter" aria-label="Status"><option value="open">Nur offen</option><option value="all">Alle Vorgänge</option><option value="approved">Genehmigt</option><option value="rejected">Abgelehnt</option><option value="withdrawn">Zurückgezogen</option></select>
+<select id="type" aria-label="Art"><option value="all">Alle Arten</option><option>Urlaub</option><option>Formular</option></select>
+<select id="scope" aria-label="Anzeige" hidden><option value="all">Alle sichtbaren Anträge</option><option value="mine">Nur meine Anträge</option></select></div>
+<div class="table-wrap"><table><thead><tr><th>Antrag</th><th>Mitarbeiter</th><th>Art</th><th>Eingereicht</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="empty" id="empty" hidden>Keine Vorgänge für diese Auswahl.</div></section>
+</main></div>
+
+<dialog id="detail"><div class="dialog-head"><h2 id="dTitle">Antrag</h2><button class="close" type="button" data-close aria-label="Schließen">×</button></div>
+<div class="detail">
+<dl id="dList"></dl>
+<div id="dPdf" hidden><button type="button" class="btn" id="pdfBtn">Formular (PDF) laden</button> <a id="pdfLink" class="btn primary" target="_blank" rel="noopener" hidden>PDF öffnen ↗</a><p class="muted" id="pdfMsg" style="font-size:12px;margin-top:6px"></p></div>
+<div id="dDecision" hidden class="decision-box"></div>
+<div id="dDecide" hidden><label class="field full" for="reason">Begründung <span class="muted" id="reasonHint">(bei Ablehnung erforderlich)</span><textarea id="reason" rows="3" maxlength="500" placeholder="z. B. Im Zeitraum sind bereits zwei Kollegen im Urlaub."></textarea></label><p class="form-error" id="dError" role="alert" hidden></p></div>
+<div id="dAudit" hidden><h3>Protokoll</h3><ul id="auditList"></ul></div>
+</div>
+<div class="dialog-actions"><button type="button" class="btn" data-close>Schließen</button><button type="button" class="btn" id="withdrawBtn" hidden>Antrag zurückziehen</button><button type="button" class="btn danger" id="rejectBtn" hidden>Ablehnen</button><button type="button" class="btn primary" id="approveBtn" hidden>Genehmigen</button></div></dialog>
+
+<script type="module">
+import {init, watchApprovals, decide, withdraw, canDecide, DECIDERS, STATUS_LABEL, ROLE_LABEL, niceDate, niceDateTime, ref, get} from "../../assets/js/approvals.js";
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+let ctx = null, data = [], current = null, deepLinkDone = false, pdfUrl = null;
+
+function notice(msg, error = false) {
+  const el = $("connectionNotice"); el.textContent = msg;
+  el.style.background = error ? "#fbeceb" : "#edf5ee"; el.style.color = error ? "#a43d38" : "#356342";
+}
+const cell = (text, cls) => { const td = document.createElement("td"); if (cls) td.className = cls; td.textContent = text || "—"; return td; };
+const badge = status => { const b = document.createElement("span"); b.className = "status " + (status === "approved" ? "ok" : status === "rejected" ? "bad" : status === "open" ? "warn" : "neutral"); b.textContent = STATUS_LABEL[status] || status; return b; };
+
+function render() {
+  const q = $("search").value.toLocaleLowerCase("de-DE"), f = $("filter").value, t = $("type").value, sc = $("scope").value;
+  const list = data.filter(v => (!q || [v.person, v.title, v.type].join(" ").toLocaleLowerCase("de-DE").includes(q))
+    && (f === "all" || v.status === f) && (t === "all" || v.type === t) && (sc === "all" || v.createdBy === ctx.user.uid));
+  const rows = $("rows"); rows.replaceChildren();
+  list.forEach(v => {
+    const tr = document.createElement("tr");
+    tr.append(cell(v.title), cell(v.person), cell(v.type), cell(v.dateLabel || niceDateTime(v.createdAt)));
+    const st = document.createElement("td"); st.append(badge(v.status)); tr.append(st);
+    const a = document.createElement("td"), b = document.createElement("button");
+    b.className = "mini" + (canDecide(ctx, v) ? " primary" : ""); b.textContent = canDecide(ctx, v) ? "Prüfen" : "Ansehen";
+    b.onclick = () => openDetail(v); a.append(b); tr.append(a); rows.append(tr);
+  });
+  $("empty").hidden = list.length > 0; $("count").textContent = list.length + " Vorgänge";
+  const open = data.filter(v => v.status === "open");
+  $("openMetric").textContent = open.length;
+  $("leaveMetric").textContent = open.filter(v => v.type === "Urlaub").length;
+  $("formMetric").textContent = open.filter(v => v.type === "Formular").length;
+  $("doneMetric").textContent = data.filter(v => v.status === "approved" || v.status === "rejected").length;
+}
+
+function dl(rows) {
+  const d = $("dList"); d.replaceChildren();
+  rows.filter(r => r[1]).forEach(([k, v]) => { const dt = document.createElement("dt"), dd = document.createElement("dd"); dt.textContent = k; dd.textContent = v; d.append(dt, dd); });
+}
+
+async function openDetail(v) {
+  current = v; const d = v.details || {};
+  $("dTitle").textContent = v.title;
+  dl([["Art", v.type], ["Mitarbeiter", v.person], ["Eingereicht", v.dateLabel || niceDateTime(v.createdAt)],
+      ["Zeitraum", d.von ? niceDate(d.von) + (d.bis ? " – " + niceDate(d.bis) : "") : ""], ["Arbeitstage", d.tage],
+      ["Vertretung", d.vertretung], ["Formular", d.formular], ["Datum", d.datum ? niceDate(d.datum) : ""], ["Bemerkung", d.bemerkung], ["Status", STATUS_LABEL[v.status]]]);
+  // Entscheidung anzeigen
+  const dec = v.decision, box = $("dDecision"); box.replaceChildren(); box.hidden = !dec;
+  if (dec) {
+    const h = document.createElement("strong"); h.textContent = (v.status === "approved" ? "Genehmigt" : v.status === "rejected" ? "Abgelehnt" : "Letzte Entscheidung") + " von " + (dec.byName || "—") + (dec.at ? " am " + niceDateTime(dec.at) : "");
+    box.append(h);
+    if (dec.reason) { const p = document.createElement("p"); p.textContent = (v.status === "rejected" ? "Begründung: " : "Anmerkung: ") + dec.reason; box.append(p); }
+  }
+  // Entscheidungsfelder
+  const decidable = canDecide(ctx, v);
+  $("dDecide").hidden = !decidable; $("reason").value = ""; $("dError").hidden = true;
+  $("approveBtn").hidden = !decidable; $("rejectBtn").hidden = !decidable;
+  $("withdrawBtn").hidden = !(v.status === "open" && v.createdBy === ctx.user.uid);
+  // PDF
+  $("pdfLink").hidden = true; $("pdfMsg").textContent = ""; $("dPdf").hidden = !v.refPath; $("pdfBtn").disabled = false;
+  // Protokoll (nur Admin)
+  $("dAudit").hidden = true;
+  if (ctx.role === "admin" || ctx.role === "superadmin") {
+    try {
+      const snap = await get(ref(ctx.db, "approvalAudit/" + v.id)), items = Object.values(snap.val() || {}).sort((a, b) => a.timestamp - b.timestamp);
+      const ul = $("auditList"); ul.replaceChildren();
+      items.forEach(e => { const li = document.createElement("li"); li.textContent = `${niceDateTime(e.timestamp)} · ${e.actorEmail || e.actorUid} (${ROLE_LABEL[e.actorRole] || e.actorRole}): ${STATUS_LABEL[e.fromStatus] || e.fromStatus} → ${STATUS_LABEL[e.toStatus] || e.toStatus}${e.reason ? " – " + e.reason : ""}`; ul.append(li); });
+      $("dAudit").hidden = items.length === 0;
+    } catch (e) { /* kein Protokoll lesbar */ }
+  }
+  if (!$("detail").open) $("detail").showModal();
+}
+
+async function act(status) {
+  const reason = $("reason").value.trim(), err = $("dError");
+  if (status === "rejected" && !reason) { err.textContent = "Bitte eine Begründung für die Ablehnung eingeben."; err.hidden = false; $("reason").focus(); return; }
+  err.hidden = true; ["approveBtn", "rejectBtn"].forEach(id => $(id).disabled = true);
+  try { await decide(ctx, current, status, reason); $("detail").close(); notice(status === "approved" ? "Antrag genehmigt. Der Mitarbeiter wird per E-Mail informiert." : "Antrag abgelehnt. Der Mitarbeiter wird per E-Mail mit deiner Begründung informiert."); }
+  catch (e) { err.textContent = "Nicht gespeichert: " + e.message; err.hidden = false; }
+  finally { ["approveBtn", "rejectBtn"].forEach(id => $(id).disabled = false); }
+}
+$("approveBtn").onclick = () => act("approved");
+$("rejectBtn").onclick = () => act("rejected");
+$("withdrawBtn").onclick = async () => {
+  if (!confirm("Antrag wirklich zurückziehen?")) return;
+  try { await withdraw(ctx, current); $("detail").close(); notice("Antrag zurückgezogen."); } catch (e) { notice("Nicht möglich: " + e.message, true); }
+};
+$("pdfBtn").onclick = async () => {
+  $("pdfBtn").disabled = true; $("pdfMsg").textContent = "Wird geladen …";
+  try {
+    const snap = await get(ref(ctx.db, current.refPath + "/pdf")), pdf = snap.val();
+    if (!pdf || !pdf.base64) { $("pdfMsg").textContent = "Zu diesem Formular ist kein PDF hinterlegt."; return; }
+    const bin = atob(pdf.base64), bytes = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    if (pdfUrl) URL.revokeObjectURL(pdfUrl); pdfUrl = URL.createObjectURL(new Blob([bytes], {type: "application/pdf"}));
+    $("pdfLink").href = pdfUrl; $("pdfLink").hidden = false; $("pdfMsg").textContent = pdf.filename || "";
+  } catch (e) { $("pdfMsg").textContent = "Formular nicht lesbar: " + e.message; $("pdfBtn").disabled = false; }
+};
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $("detail").close());
+["search", "filter", "type", "scope"].forEach(id => $(id).addEventListener(id === "search" ? "input" : "change", render));
+
+init({
+  onDenied: msg => notice(msg, true),
+  onReady: c => {
+    ctx = c; const isDecider = DECIDERS.includes(c.role);
+    $("userEmail").textContent = c.name;
+    $("scope").hidden = !isDecider;
+    if (!isDecider) { $("pageTitle").textContent = "Meine Anträge"; $("pageSub").textContent = "Status deiner Urlaubsanträge und Formulare."; $("openSub").textContent = "Noch nicht entschieden"; $("filter").value = "all"; }
+    notice("Angemeldet: " + c.name + " · " + (ROLE_LABEL[c.role] || c.role) + (c.role === "manager" && !c.profile.teamId ? " · Hinweis: Dir ist keine Team-ID zugeordnet, daher siehst du nur eigene Anträge." : ""));
+    watchApprovals(c, list => {
+      data = list; render();
+      const id = params.get("id");
+      if (id && !deepLinkDone) { const hit = list.find(v => v.id === id); if (hit) { deepLinkDone = true; $("filter").value = "all"; render(); openDetail(hit); } }
+    }, err => notice("Zugriff verweigert oder Datenbankregeln fehlen: " + err.message, true));
+  },
+});
 </script></body></html>

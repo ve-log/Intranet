@@ -8,6 +8,7 @@
 <title>VE-LOG Urlaubsantrag</title>
 
 <link rel="stylesheet" href="../../assets/css/urlaubformular.css">
+<script src="../../assets/js/firebase-config.js"></script>
 </head>
 
 <body>
@@ -475,6 +476,14 @@
 
         <button
             type="button"
+            class="btn-einreichen"
+            id="btnEinreichen"
+            disabled>
+            📨 Zur Genehmigung einreichen
+        </button>
+
+        <button
+            type="button"
             class="btn-drucken"
             onclick="window.print()">
             🖨 Drucken
@@ -496,6 +505,8 @@
 
     </div>
 
+
+    <div class="einreich-status" id="einreichStatus" role="status" aria-live="polite" hidden></div>
 
     <div class="hinweis">
         Hinweis: Die eingegebenen Daten werden beim Speichern lokal
@@ -1129,5 +1140,39 @@ window.addEventListener(
 
 </script>
 
+
+<script type="module">
+import {init, submitApproval, workdays, niceDate} from "../../assets/js/approvals.js";
+const $ = id => document.getElementById(id);
+const btn = $("btnEinreichen"), box = $("einreichStatus");
+let ctx = null;
+function show(msg, type, linkText) {
+  box.hidden = false; box.className = "einreich-status " + (type || ""); box.textContent = msg;
+  if (linkText) { const a = document.createElement("a"); a.href = "../personal/genehmigungen.html"; a.textContent = linkText; box.append(" ", a); }
+}
+init({
+  redirect: false,
+  onDenied: msg => show(msg + " Zum Einreichen musst du angemeldet sein.", "warn"),
+  onReady: c => { ctx = c; btn.disabled = false; }
+});
+btn.addEventListener("click", async () => {
+  if (!ctx) return;
+  const von = $("urlaubVon").value, bis = $("urlaubBis").value, vertretung = $("vertretung").value.trim();
+  if (!von || !bis) { show("Bitte „Urlaub von“ und „Urlaub bis“ ausfüllen.", "error"); return; }
+  if (bis < von) { show("Das Enddatum liegt vor dem Startdatum.", "error"); return; }
+  const manual = parseFloat($("urlaubTage").value);
+  const tage = Number.isFinite(manual) && manual > 0 ? manual : workdays(von, bis);
+  const title = "Urlaub " + niceDate(von) + (bis !== von ? " – " + niceDate(bis) : "") + " (" + String(tage).replace(".", ",") + " " + (tage === 1 ? "Tag" : "Tage") + ")";
+  if (!confirm("Urlaubsantrag jetzt an deinen Vorgesetzten senden?\n\n" + title)) return;
+  btn.disabled = true; show("Wird eingereicht …");
+  try {
+    await submitApproval(ctx, {type: "Urlaub", title, details: {von, bis, tage: String(tage), vertretung}});
+    show("✅ Antrag eingereicht. Dein Vorgesetzter wurde per E-Mail informiert. Die Entscheidung siehst du unter", "ok", "Meine Anträge");
+  } catch (e) {
+    btn.disabled = false;
+    show("Antrag konnte nicht eingereicht werden: " + e.message, "error");
+  }
+});
+</script>
 </body>
 </html>
