@@ -12,6 +12,9 @@
 <title>VE-Log · Administrator-Dashboard</title>
 <script src="https://alcdn.msauth.net/browser/4.25.0/js/msal-browser.min.js"></script>
 <link rel="stylesheet" href="../../assets/css/dashboard.css">
+<link rel="stylesheet" href="../../assets/css/dashboard-pro.css">
+<link rel="stylesheet" href="../../assets/css/dashboard-themes.css">
+<script>try{var t=localStorage.getItem("velog:dashboard:theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 </head>
 <body>
 <svg class="defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -45,7 +48,7 @@
 <a href="#reportDialog" data-dialog="reportDialog" data-admin-only><svg class="icon" aria-hidden="true"><use href="#chart"/></svg>Berichte</a>
 <a href="kommunikation.html"><svg class="icon" aria-hidden="true"><use href="#chat"/></svg>Kommunikation <span id="communicationBadge" class="communication-nav-badge" hidden></span></a>
 </nav><div class="side-bottom"><div class="side-note">Alles für deinen Arbeitsalltag.<br>Einfach an einem Ort.</div></div></aside>
-<div class="shell"><header class="topbar"><div class="breadcrumb">Arbeitsplatz &nbsp;/&nbsp; <strong>Dashboard</strong></div><div class="account"><div class="avatar" id="avatar" aria-hidden="true">VE</div><div class="account-copy"><strong id="userEmail">Anmeldung wird geprüft …</strong><span id="sessionLabel">Firebase wird geladen</span></div><button class="quiet-button" id="sessionButton" type="button"><svg class="icon" aria-hidden="true"><use href="#logout"/></svg><span id="sessionAction">Anmelden</span></button></div></header>
+<div class="shell"><header class="topbar"><div class="breadcrumb">Arbeitsplatz &nbsp;/&nbsp; <strong>Dashboard</strong></div><div class="account"><div class="avatar" id="avatar" aria-hidden="true">VE</div><div class="account-copy"><strong id="userEmail">Anmeldung wird geprüft …</strong><span id="sessionLabel">Firebase wird geladen</span></div><select class="theme-pick" id="themePick" aria-label="Design-Vorlage"><option value="">Business dunkel</option><option value="minimal">Hell &amp; minimal</option><option value="corporate">Corporate Rot</option><option value="dark">Dunkelmodus</option></select><button class="quiet-button" id="sessionButton" type="button"><svg class="icon" aria-hidden="true"><use href="#logout"/></svg><span id="sessionAction">Anmelden</span></button></div></header>
 <section id="authGate" class="auth-gate" aria-live="polite"><h1>VE-LOG – Anmeldung wird geprüft</h1><div id="authGateStatus" class="auth-gate-status">Bitte warte, während deine Sitzung überprüft wird.</div><p>Ein Microsoft-Entra-Konto allein stellt keine Firebase-Sitzung her. Für den Dashboard-Zugriff ist eine bestätigte Firebase-Anmeldung erforderlich.</p><a href="../../index.html">Zur Anmeldung</a></section>
 <main id="main" hidden>
 <section class="intro" aria-labelledby="greeting"><div><div class="eyebrow">Verwaltung · Überblick</div><h1 id="greeting">Willkommen bei VE-Log.</h1><p class="muted">Personal, Anträge und Betrieb auf einen Blick.</p></div><div class="date muted"><svg class="icon" aria-hidden="true"><use href="#calendar"/></svg><time id="today"></time></div></section>
@@ -75,6 +78,10 @@
 <dialog class="dialog" id="uploadDialog" aria-labelledby="uploadTitle"><div class="dialog-head"><h2 id="uploadTitle">Dokument hochladen</h2><button class="dialog-close" type="button" data-close aria-label="Schließen">×</button></div><div class="dialog-content"><p>Wähle Dokumente für eine lokale Vorschau. Die Dateien werden noch nicht an einen Server übertragen oder dauerhaft gespeichert.</p><label for="documentFiles">Dokumente auswählen</label><input type="file" id="documentFiles" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.png,.jpg,.jpeg"><ul class="upload-list" id="uploadFiles"></ul><p id="uploadStatus" role="status">Noch keine Dateien ausgewählt.</p></div></dialog>
 <dialog class="dialog" id="reportDialog" aria-labelledby="reportTitle"><div class="dialog-head"><h2 id="reportTitle">Berichte · Kennzahlen</h2><button class="dialog-close" type="button" data-close aria-label="Schließen">×</button></div><div class="dialog-content"><table class="report-table"><caption id="reportCaption">Beispieldaten</caption><tbody id="reportRows"></tbody></table><p class="private-note">Zeitraumfilter und Exporte können mit der Datenanbindung ergänzt werden.</p></div></dialog>
 <aside id="communicationPopup" class="communication-popup" aria-labelledby="communicationPopupTitle" hidden><div class="communication-popup-header"><div><h2 id="communicationPopupTitle">Neu aus Kommunikation</h2><p id="communicationPopupCount"></p></div><button id="closeCommunicationPopup" class="communication-popup-close" type="button" aria-label="Benachrichtigungen schließen">×</button></div><div id="communicationItems"></div><div class="communication-popup-actions"><a id="communicationPopupMore" href="kommunikation.html">Kommunikation öffnen →</a><button id="markCommunicationRead" class="quiet-button" type="button">Alle als gesehen</button></div></aside><p id="communicationLive" class="communication-live" role="status" aria-live="polite"></p>
+<script>
+(function(){var s=document.getElementById("themePick");if(!s)return;var t="";try{t=localStorage.getItem("velog:dashboard:theme")||""}catch(e){}s.value=t;
+s.addEventListener("change",function(){var v=s.value;if(v)document.documentElement.setAttribute("data-theme",v);else document.documentElement.removeAttribute("data-theme");try{if(v)localStorage.setItem("velog:dashboard:theme",v);else localStorage.removeItem("velog:dashboard:theme")}catch(e){}});})();
+</script>
 <script type="module">
 'use strict';
 const $=id=>document.getElementById(id);
