@@ -6,16 +6,19 @@ Begründung Pflicht. Der Mitarbeiter bekommt danach eine E-Mail mit dem Ergebnis
 
 ## So funktioniert es
 
-1. **Urlaub:** Mitarbeiter öffnet `urlaubformular.html` → „Zur Genehmigung einreichen“.
-   **Formulare:** Wird ein Nachweis/Formular mit Status „eingereicht“ gespeichert, legt die Cloud Function
-   automatisch einen Antrag an (kein Umbau der Formulare nötig).
+1. **Urlaub:** Mitarbeiter öffnet `urlaubformular.html`, wählt den Empfänger und klickt „Zur Genehmigung einreichen“.
+   **Formulare:** In jedem Formular (Arbeitsnachweis, LKW, Lieferschein, Leistungsnachweis, Material-Formulare,
+   Materialausgabe, Fuhrunternehmer) wählt der Mitarbeiter unter „Zur Genehmigung senden an“ den Bauleiter und klickt
+   „Senden“. Das Formular wird gespeichert, bekommt den Status „eingereicht“ und die Cloud Function legt
+   den Antrag direkt im Konto des gewählten Bauleiters an.
 2. Der Antrag liegt in `approvals/{id}` (Status `open`). Die Cloud Function `antragNeu` schickt eine E-Mail
    mit Link an den Manager.
 3. Manager klickt auf den Link → Login → Antrag öffnet sich direkt → **Genehmigen** oder **Ablehnen** (Begründung).
 4. Die Entscheidung wird gespeichert, in `approvalAudit/` protokolliert und per E-Mail an den Antragsteller gemeldet.
 
 **Wer ist zuständig?** (in dieser Reihenfolge)
-1. Benutzer mit Rolle `manager` und **gleicher Team-ID** wie der Antragsteller (Team-ID in der Benutzerverwaltung setzen!)
+0. Der im Formular **gewählte Empfänger**. Nur er (und Admins) kann dann entscheiden, und nur er bekommt die E-Mail.
+1. Ohne Auswahl: Benutzer mit Rolle `manager` und **gleicher Team-ID** wie der Antragsteller
 2. sonst die Adressen aus `FALLBACK_APPROVER_EMAILS`
 3. sonst alle Administratoren
 
@@ -63,6 +66,17 @@ Beim Deploy werden abgefragt:
 ### Gmail / Google Workspace
 `SMTP_HOST=smtp.gmail.com`, Port `587`, mit einem **App-Passwort**.
 
+## Auswahl „Senden an“ (Bauleiter)
+- In der Auswahl erscheinen alle Benutzer mit der Rolle **Manager**. Die vier Bauleiter müssen also in der
+  Benutzerverwaltung die Rolle `manager` haben.
+- Optional kann im Profil (`users/<uid>/funktion`) z. B. „Bauleiter“ stehen, dann zeigt die Auswahl „Name (Bauleiter)“.
+- Die Liste liegt in `approvers/` und wird von den Cloud Functions automatisch gepflegt (bei jeder Änderung von Rolle
+  oder Profil). **Nach dem ersten Deploy** einmal als Administrator auf der Seite *Anträge & Genehmigungen* auf
+  **„Empfängerliste aktualisieren“** klicken, damit schon vorhandene Manager erfasst werden.
+- Der Empfänger sieht das Formular in seinem Konto unter *Anträge & Genehmigungen* (Dashboard-Kachel) und kann das PDF öffnen.
+- Nicht dabei sind `baustelle.html`, `materialversand.html` und die Übersicht `formular.html`, weil sie keine Nachweise
+  speichern. Gast-Seiten können nichts einreichen.
+
 ## Nach dem Deploy prüfen
 1. In der Benutzerverwaltung bei Mitarbeiter **und** Manager dieselbe **Team-ID** eintragen.
 2. Als Mitarbeiter einen Urlaubsantrag einreichen.
@@ -83,7 +97,8 @@ Beim Deploy werden abgefragt:
 |---|---|
 | `functions/index.js`, `functions/package.json` | E-Mail-Versand (Cloud Functions) |
 | `firebase.json`, `database.rules.json` | Deploy-Konfiguration und Regeln (Kopie in `docs/firebase-database-rules.json`) |
-| `assets/js/approvals.js` | gemeinsame Funktionen für Anträge |
+| `assets/js/approvals.js` | gemeinsame Funktionen für Anträge und Empfängerliste |
+| `assets/js/einreichen.js` | Auswahl „Senden an“ und Knopf „Senden“ in allen Formularen |
 | `pages/personal/genehmigungen.html` | Anträge prüfen/entscheiden (Manager, Admin) bzw. „Meine Anträge“ (Mitarbeiter) |
 | `pages/mitarbeiter/urlaubformular.html` | Button „Zur Genehmigung einreichen“ |
 | `index.html` | Nach dem Login zurück zum Link aus der E-Mail |

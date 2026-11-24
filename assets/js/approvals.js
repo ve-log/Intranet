@@ -69,7 +69,7 @@ export function init({ onReady, onDenied, redirect = true }) {
 }
 
 /** Reicht einen Antrag ein. Die E-Mail an den Manager verschickt die Cloud Function. */
-export async function submitApproval(ctx, { type, title, details = {}, priority = "Normal" }) {
+export async function submitApproval(ctx, { type, title, details = {}, priority = "Normal", assignee = null }) {
   const id = push(ref(ctx.db, "approvals")).key;
   const clean = {};
   Object.entries(details).forEach(([k, v]) => { if (v !== "" && v != null) clean[k] = String(v); });
@@ -82,6 +82,7 @@ export async function submitApproval(ctx, { type, title, details = {}, priority 
   };
   if (Object.keys(clean).length) item.details = clean;
   if (ctx.profile.teamId) item.teamId = ctx.profile.teamId;
+  if (assignee && assignee.uid) { item.assigneeUid = assignee.uid; item.assigneeName = String(assignee.name || "").slice(0, 120); }
   await set(ref(ctx.db, "approvals/" + id), item);
   return id;
 }
@@ -118,7 +119,10 @@ export async function withdraw(ctx, a) {
 export function canDecide(ctx, a) {
   if (a.status !== "open" || !DECIDERS.includes(ctx.role)) return false;
   if (a.createdBy === ctx.user.uid && ctx.role !== "superadmin") return false;
-  if (ctx.role === "manager") return !!a.teamId && a.teamId === ctx.profile.teamId;
+  if (ctx.role === "manager") {
+    if (a.assigneeUid) return a.assigneeUid === ctx.user.uid;      // an einen bestimmten Empfänger gesendet
+    return !!a.teamId && a.teamId === ctx.profile.teamId;           // sonst Team-Manager
+  }
   return true;
 }
 
@@ -137,7 +141,41 @@ export function watchApprovals(ctx, onData, onError) {
   if (ctx.role === "admin" || ctx.role === "superadmin") listen("all", col);
   else {
     listen("own", query(col, orderByChild("createdBy"), equalTo(ctx.user.uid)));
+    if (ctx.role === "manager") listen("assigned", query(col, orderByChild("assigneeUid"), equalTo(ctx.user.uid)));
     if (ctx.role === "manager" && ctx.profile.teamId) listen("team", query(col, orderByChild("teamId"), equalTo(ctx.profile.teamId)));
   }
   return () => stops.forEach((s) => s());
+}
+
+/**
+ * Liste der möglichen Empfänger (Bauleiter/Manager) für „Senden an“.
+ * Kommt aus approvers/ (wird von den Cloud Functions aus Rollen und Profilen gepflegt).
+ * Gibt [{uid, name, label}] sortiert nach Namen zurück; der eigene Benutzer ist ausgeschlossen.
+ */
+export async function loadApprovers(ctx) {
+  const snap = await get(ref(ctx.db, "approvers"));
+  const out = [];
+  snap.forEach((c) => {
+    const v = c.val() || {};
+    if (c.key === ctx.user.uid || !v.name) return;
+    out.push({ uid: c.key, name: v.name, label: v.funktion ? `${v.name} (${v.funktion})` : v.name });
+  });
+  return out.sort((a, b) => a.name.localeCompare(b.name, "de"));
+}
+
+/** Füllt ein <select> mit den Empfängern. Gibt die Anzahl zurück. */
+export function fillApproverSelect(select, list) {
+  select.replaceChildren();
+  const first = document.createElement("option");
+  first.value = ""; first.textContent = list.length ? "– bitte auswählen –" : "Keine Empfänger hinterlegt";
+  select.append(first);
+  list.forEach((a) => { const o = document.createElement("option"); o.value = a.uid; o.textContent = a.label; o.dataset.name = a.name; select.append(o); });
+  return list.length;
+}
+
+/** Admin: Empfängerliste komplett neu aufbauen (Cloud Function rebuildApprovers). */
+export async function rebuildApprovers() {
+  const { getFunctions, httpsCallable } = await import("https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js");
+  const fn = httpsCallable(getFunctions(getApps()[0], "europe-west1"), "rebuildApprovers");
+  return (await fn()).data;
 }

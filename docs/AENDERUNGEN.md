@@ -65,3 +65,14 @@ Diese Seiten werden verlinkt, existieren aber noch nicht (führen zur 404-Seite)
 - Neu: Firebase-Regeln für `approvals` und `approvalAudit`; Manager dürfen Formulare ihres Teams lesen (`database.rules.json`, Kopie in `docs/firebase-database-rules.json`).
 - `index.html`: Nach dem Login Rücksprung zur ursprünglichen Seite (Links aus E-Mails).
 - Einrichtung: siehe `docs/GENEHMIGUNG-EMAIL-SETUP.md`. **Regeln und Functions müssen veröffentlicht werden, sonst funktioniert der Ablauf nicht.**
+
+## Empfänger wählen („Senden an“) bei Formularen und Urlaub
+- Neu: `assets/js/einreichen.js` in allen 9 Nachweis-Formularen: Auswahl des Bauleiters, Knopf „Senden“ setzt den Status „eingereicht“ und den Empfänger. (Vorher setzte nichts im Portal diesen Status.)
+- Neu: Empfängerliste `approvers/` (Cloud Functions `empfaengerRolle`, `empfaengerProfil`, `rebuildApprovers`), Button „Empfängerliste aktualisieren“ für Admins.
+- Der gewählte Empfänger bekommt den Antrag im eigenen Konto und die E-Mail; nur er und Admins können entscheiden.
+- Regeln: neu `approvers`, `approvals/assigneeUid`, `nachweise/.../empfaengerUid` (Empfänger darf das eingereichte Formular lesen). Regeln **und** Functions neu veröffentlichen.
+
+## Einheitliche Knöpfe „Speichern / Senden / Drucken“
+- Alle Formulare (Mitarbeiter und Gast) haben dieselbe Knopfzeile: **Speichern**, **Senden**, **Drucken**.
+- „Senden“ speichert, setzt den Status „eingereicht“ und schickt das Formular an den gewählten Empfänger (`assets/js/einreichen.js`).
+- Entfernt: doppelte Knöpfe „Als PDF speichern“ / „PDF“ (taten dasselbe wie Drucken) und der Link „Meine Nachweise / PDF senden“.
