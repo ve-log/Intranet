@@ -166,6 +166,11 @@
         </div>
       </div>
       <p id="roleHelp" class="edit-note"></p>
+      <div id="approverBox" class="approver-box" hidden>
+        <h3>Genehmiger für Vorlagen</h3>
+        <p id="approverHelp" class="edit-note"></p>
+        <div id="approverChecks" class="approver-grid"></div>
+      </div>
       <p class="edit-note">Die E-Mail hier gehört zum Datenbankprofil. Änderungen daran ändern nicht die Anmeldedaten in Firebase Authentication.</p>
     </fieldset>
     <button id="saveButton" class="submit" type="submit">Änderungen speichern</button>
@@ -192,6 +197,110 @@ let auth, db, D, currentUser = null, ownRole = null;
 let profiles = {}, userRoles = new Map(), roleSubscriptions = new Map();
 let stopOwnRole = null, stopProfiles = null, generation = 0;
 let loaded = false, page = 0, editingUid = null, saving = false;
+
+/* Genehmiger je Formularvorlage: formApprovers/<Vorlage>/<uid> (siehe auch genehmiger-vorlagen.html) */
+const formTypes = {
+  arbeitsnachweis: 'Arbeitsnachweis',
+  arbeitsnachweis_lkw: 'Arbeitsnachweis LKW',
+  leistungsnachweis: 'Leistungsnachweis',
+  materialausgabe: 'Materialausgabe',
+  lieferschein: 'Liefer-/Empfangsschein',
+  material_empfaenger: 'Material – Empfänger',
+  material_baustelle: 'Material – Baustelle',
+  material_absender: 'Material – Absender',
+  fuhrunternehmer: 'Fuhrunternehmer'
+};
+const approverRoles = ['manager', 'admin', 'superadmin'];
+let approverState = { uid: null, loaded: false, original: new Set() };
+
+function approverRoleSelected() {
+  return approverRoles.includes($('edit_role').value);
+}
+
+function updateApproverBox() {
+  const box = $('approverBox');
+  const eligible = approverRoleSelected();
+  const editable = isSuperadmin() && approverState.loaded && eligible;
+
+  box.hidden = !(eligible || approverState.original.size);
+
+  for (const cb of $('approverChecks').querySelectorAll('input')) {
+    cb.disabled = !editable;
+    if (!eligible) cb.checked = false;
+  }
+
+  $('approverHelp').textContent = !approverState.loaded
+    ? 'Zuordnung wird geladen …'
+    : !eligible
+      ? 'Mit dieser Rolle kann der Benutzer keine Anträge genehmigen. Vorhandene Zuordnungen werden beim Speichern entfernt.'
+      : isSuperadmin()
+        ? 'Dieser Benutzer erscheint in diesen Formularen bei „Senden an“ und darf sie genehmigen.'
+        : 'Nur ein Superadmin darf hier Genehmiger zuordnen. Als Administrator findest du die Zuordnung auf der Seite „Genehmiger je Vorlage“.';
+}
+
+async function loadApproverState(uid) {
+  approverState = { uid, loaded: false, original: new Set() };
+  const wrap = $('approverChecks');
+  wrap.replaceChildren();
+
+  for (const [typ, label] of Object.entries(formTypes)) {
+    const l = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = typ;
+    cb.disabled = true;
+    l.append(cb, document.createTextNode(' ' + label));
+    wrap.append(l);
+  }
+
+  updateApproverBox();
+
+  try {
+    const snap = await D.get(D.ref(db, 'formApprovers'));
+    if (editingUid !== uid) return;
+    const data = snap.val() || {};
+
+    for (const typ of Object.keys(formTypes)) {
+      if (data[typ] && data[typ][uid]) approverState.original.add(typ);
+    }
+
+    for (const cb of wrap.querySelectorAll('input')) {
+      cb.checked = approverState.original.has(cb.value);
+    }
+
+    approverState.loaded = true;
+  } catch (error) {
+    $('approverHelp').textContent = 'Die Zuordnung konnte nicht geladen werden (Datenbankregeln für formApprovers veröffentlicht?).';
+    return;
+  }
+
+  updateApproverBox();
+}
+
+function collectApproverUpdates(uid, finalRole, vorname, nachname) {
+  const updates = {};
+  if (!isSuperadmin() || !approverState.loaded || approverState.uid !== uid) return updates;
+
+  const name = [vorname, nachname].filter(Boolean).join(' ').slice(0, 80);
+  const eligible = approverRoles.includes(finalRole);
+
+  for (const cb of $('approverChecks').querySelectorAll('input')) {
+    const typ = cb.value;
+    const want = eligible && cb.checked;
+    const had = approverState.original.has(typ);
+
+    if (want) {
+      const entry = { name };
+      const funktion = clean(profiles[uid]?.funktion).slice(0, 40);
+      if (funktion) entry.funktion = funktion;
+      updates[`formApprovers/${typ}/${uid}`] = entry;
+    } else if (had) {
+      updates[`formApprovers/${typ}/${uid}`] = null;
+    }
+  }
+
+  return updates;
+}
 
 const pageSize = 20;
 const clean = value => typeof value === 'string' ? value.trim() : '';
@@ -421,6 +530,7 @@ function openEditor(uid) {
   $('saveButton').disabled = false;
   $('closeEditor').disabled = false;
   $('editor').showModal();
+  loadApproverState(uid);
 }
 
 /*
@@ -523,6 +633,9 @@ async function deleteEmployee(uid) {
     const updates = {};
     updates[`users/${uid}`] = null;
     updates[`roles/${uid}`] = null;
+    for (const typ of Object.keys(formTypes)) {
+      updates[`formApprovers/${typ}/${uid}`] = null;
+    }
 
     await D.update(D.ref(db), updates);
 
@@ -616,6 +729,14 @@ async function saveProfile(event) {
   if (changeRole) {
     updates[`roles/${uid}`] = desiredRole;
   }
+
+  // Genehmiger je Vorlage (nur Superadmin); Name wird mitgeführt, weil Mitarbeiter users/ nicht lesen dürfen.
+  Object.assign(updates, collectApproverUpdates(
+    uid,
+    changeRole ? desiredRole : oldRole,
+    patch.vorname,
+    patch.nachname
+  ));
 
   saving = true;
   $('editFields').disabled = true;
@@ -819,6 +940,8 @@ $('nextPage').addEventListener('click', () => {
   page++;
   render();
 });
+
+$('edit_role').addEventListener('change', updateApproverBox);
 
 $('closeEditor').addEventListener('click', closeEditor);
 

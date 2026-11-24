@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de"><head>
+<link rel="icon" type="image/png" href="../../assets/img/favicon.png">
+<script src="../../assets/js/firebase-config.js"></script>
+<script src="../../assets/js/access.js" data-require="admin"></script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light">
+<title>VE-Log · Genehmiger je Vorlage</title>
+<link rel="stylesheet" href="../../assets/css/wartung.css">
+<link rel="stylesheet" href="../../assets/css/genehmigungen.css">
+<link rel="stylesheet" href="../../assets/css/genehmiger-vorlagen.css">
+</head><body>
+<aside class="sidebar"><a class="brand" href="../mitarbeiter/dashboard.html"><img src="../../assets/img/logo.png" alt="VE-Log" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><b hidden>VE-Log</b><small>MITARBEITERPORTAL</small></a><div class="nav-label">ARBEITSPLATZ</div>
+<nav><a href="../mitarbeiter/dashboard.html">▦ Dashboard</a><a href="personalmanagement.html">♙ Mitarbeiter</a><a href="../formulare/formular.html">▤ Formulare</a><a href="../formulare/nachweise.html">▣ Meine Nachweise</a><a href="genehmigungen.html">✓ Genehmigungen</a><a class="active" href="genehmiger-vorlagen.html" aria-current="page">⚑ Genehmiger je Vorlage</a><a href="benutzerverwaltung.html">♙ Benutzerverwaltung</a></nav>
+<div class="side-note">Alles für deinen Arbeitsalltag.<br>Einfach an einem Ort.</div></aside>
+<div class="shell"><header><div class="crumb">Verwaltung / <strong>Genehmiger je Vorlage</strong></div><div class="user"><span class="avatar">VE</span><span><strong id="userName">Anmeldung wird geprüft</strong><br><span class="muted" id="userRole">Firebase-Konto</span></span></div></header>
+<main id="main">
+<section class="intro"><div><div class="eyebrow">Verwaltung · nur Administratoren</div><h1>Genehmiger je Vorlage</h1><p class="muted">Lege fest, wer welches Formular genehmigen darf. Mitarbeiter sehen in der Vorlage automatisch genau diese Personen bei „Senden an“ – ändern können sie das nicht.</p></div><a class="btn" href="genehmigungen.html">✓ Zu den Genehmigungen</a></section>
+<div class="demo" id="notice">Verbindung wird geprüft …</div>
+<section class="panel"><div class="toolbar"><input class="vg-search" id="search" type="search" placeholder="Person suchen …" aria-label="Person suchen" disabled><span class="tag" id="summary">—</span></div>
+<p class="muted" style="font-size:12px;margin:0">Wählbar sind Benutzer mit der Rolle Manager, Administrator oder Superadministrator (nur sie dürfen Anträge entscheiden). Änderungen werden sofort gespeichert. Ist für eine Vorlage niemand ausgewählt, sehen Mitarbeiter wie bisher alle Manager.</p></section>
+<div class="vg-grid" id="grid"></div>
+</main></div>
+<div class="vg-toast" id="toast" role="status" aria-live="polite"></div>
+<script type="module">
+import {init, FORM_TYPES, APPROVER_ROLES, ROLE_LABEL, ref, get, onValue, update} from "../../assets/js/approvals.js";
+const $ = id => document.getElementById(id);
+let ctx = null, people = [], config = {}, synced = false, busy = false, timer = null;
+
+function toast(text, error = false) {
+  const t = $("toast"); t.textContent = text; t.className = "vg-toast show" + (error ? " err" : "");
+  clearTimeout(timer); timer = setTimeout(() => t.classList.remove("show"), 3500);
+}
+function notice(text, error = false) {
+  const el = $("notice"); el.textContent = text;
+  el.style.background = error ? "#fbeceb" : "#edf5ee"; el.style.color = error ? "#a43d38" : "#356342";
+}
+const displayName = p => [p.vorname, p.nachname].filter(Boolean).join(" ").trim() || p.benutzername || p.email || "Unbekannt";
+
+async function loadPeople() {
+  const snap = await get(ref(ctx.db, "users"));
+  const users = snap.val() || {};
+  const uids = Object.keys(users);
+  const roles = await Promise.all(uids.map(uid => get(ref(ctx.db, "roles/" + uid)).then(s => s.val()).catch(() => null)));
+  people = uids.map((uid, i) => ({ uid, role: roles[i], profile: users[uid] || {} }))
+    .filter(p => APPROVER_ROLES.includes(p.role) && p.profile.aktiv !== false)
+    .map(p => ({ uid: p.uid, role: p.role, name: displayName(p.profile).slice(0, 80), funktion: String(p.profile.funktion || "").slice(0, 40) }))
+    .sort((a, b) => a.name.localeCompare(b.name, "de"));
+}
+
+function entryFor(p) { const e = { name: p.name }; if (p.funktion) e.funktion = p.funktion; return e; }
+
+// Namen in formApprovers aktuell halten (Mitarbeiter dürfen users/ nicht lesen, deshalb steht der Name dort).
+async function syncNames() {
+  if (synced) return; synced = true;
+  const updates = {};
+  for (const [typ, entries] of Object.entries(config)) for (const [uid, e] of Object.entries(entries || {})) {
+    const p = people.find(x => x.uid === uid); if (!p) continue;
+    if (e.name !== p.name || (e.funktion || "") !== p.funktion) updates[`formApprovers/${typ}/${uid}`] = entryFor(p);
+  }
+  if (Object.keys(updates).length) { try { await update(ref(ctx.db), updates); } catch (e) { /* nicht kritisch */ } }
+}
+
+async function write(updates, okText) {
+  if (busy) return; busy = true;
+  try { await update(ref(ctx.db), updates); toast(okText); }
+  catch (e) { toast(/permission/i.test(e.message || "") ? "Speichern verweigert – Datenbankregeln (formApprovers) veröffentlicht?" : "Nicht gespeichert: " + e.message, true); }
+  finally { busy = false; render(); }
+}
+
+function render() {
+  const q = $("search").value.trim().toLocaleLowerCase("de");
+  const grid = $("grid"); grid.replaceChildren();
+  let total = 0;
+  for (const [typ, label] of Object.entries(FORM_TYPES)) {
+    const chosen = config[typ] || {};
+    const count = Object.keys(chosen).length; total += count;
+    const stale = Object.keys(chosen).filter(uid => !people.some(p => p.uid === uid));
+    const card = document.createElement("article"); card.className = "vg-card";
+    const head = document.createElement("div"); head.className = "vg-head";
+    const h = document.createElement("h3"); h.textContent = label;
+    const tag = document.createElement("span"); tag.className = "status " + (count ? "ok" : "warn");
+    tag.textContent = count ? count + " Genehmiger" : "Standard";
+    head.append(h, tag);
+    const hint = document.createElement("p"); hint.className = "vg-hint" + (count ? "" : " warn-text");
+    hint.textContent = count ? "Nur diese Personen erscheinen bei „Senden an“." : "Nicht festgelegt – Mitarbeiter sehen alle Manager.";
+    const tools = document.createElement("div"); tools.className = "vg-tools";
+    const all = document.createElement("button"); all.type = "button"; all.className = "mini"; all.textContent = "Alle";
+    const none = document.createElement("button"); none.type = "button"; none.className = "mini"; none.textContent = "Keine";
+    all.onclick = () => { const u = {}; people.forEach(p => u[`formApprovers/${typ}/${p.uid}`] = entryFor(p)); write(u, label + ": alle ausgewählt."); };
+    none.onclick = () => { const u = {}; Object.keys(chosen).forEach(uid => u[`formApprovers/${typ}/${uid}`] = null); if (Object.keys(u).length) write(u, label + ": Auswahl entfernt."); };
+    tools.append(all, none);
+    const list = document.createElement("ul"); list.className = "vg-list";
+    const shown = people.filter(p => !q || (p.name + " " + p.funktion).toLocaleLowerCase("de").includes(q));
+    const rows = shown.map(p => ({ uid: p.uid, name: p.name, sub: [ROLE_LABEL[p.role], p.funktion].filter(Boolean).join(" · "), p, stale: false }))
+      .concat(stale.map(uid => ({ uid, name: chosen[uid].name || uid, sub: "nicht mehr berechtigt – bitte entfernen", p: null, stale: true })));
+    rows.forEach(r => {
+      const li = document.createElement("li"), lab = document.createElement("label"), cb = document.createElement("input");
+      cb.type = "checkbox"; cb.checked = !!chosen[r.uid]; cb.disabled = busy;
+      if (r.stale) lab.className = "stale";
+      const who = document.createElement("span"); who.className = "who";
+      const n = document.createElement("span"); n.textContent = r.name;
+      const s = document.createElement("small"); s.textContent = r.sub; who.append(n, s);
+      cb.onchange = () => write({ [`formApprovers/${typ}/${r.uid}`]: cb.checked && r.p ? entryFor(r.p) : null }, cb.checked ? r.name + " genehmigt jetzt „" + label + "“." : r.name + " entfernt.");
+      lab.append(cb, who); li.append(lab); list.append(li);
+    });
+    if (!rows.length) { const li = document.createElement("li"); li.className = "empty"; li.textContent = people.length ? "Keine Treffer." : "Noch keine Manager/Administratoren vorhanden."; list.append(li); }
+    card.append(head, hint, tools, list); grid.append(card);
+  }
+  $("summary").textContent = people.length + " mögliche Genehmiger · " + total + " Zuordnungen";
+}
+
+$("search").addEventListener("input", render);
+
+init({
+  onDenied: msg => notice(msg, true),
+  onReady: async c => {
+    ctx = c; $("userName").textContent = c.name; $("userRole").textContent = ROLE_LABEL[c.role] || c.role;
+    if (!["admin", "superadmin"].includes(c.role)) {
+      document.querySelector("main").innerHTML = '<div class="panel vg-denied"><h2>Kein Zugriff</h2><p class="muted">Diese Seite ist nur für Administratoren und Superadministratoren.</p></div>';
+      return;
+    }
+    try {
+      await loadPeople();
+      $("search").disabled = false;
+      onValue(ref(ctx.db, "formApprovers"), s => { config = s.val() || {}; render(); notice("Angemeldet: " + c.name + " · " + (ROLE_LABEL[c.role] || c.role) + ". Änderungen gelten sofort."); syncNames(); },
+        e => notice("Zugriff verweigert oder Datenbankregeln fehlen: " + e.message, true));
+    } catch (e) { notice("Benutzerliste konnte nicht geladen werden: " + e.message, true); }
+  },
+});
+</script></body></html>
